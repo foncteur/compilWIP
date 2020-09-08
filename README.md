@@ -6,10 +6,10 @@ compilation de Master 1 Inforamtique en 2020-2021.
 Les notes de cours sont disponibles dans le dossier [cours/](cours/). Voir en
 particulier le fichier texte [journal.org](cours/journal.org).
 
-Les énoncés des jalons du projet /seront/ disponibles dans le dossier
+Les énoncés des jalons du projet *seront* disponibles dans le dossier
 [projet](projet/).
 
-Le code du compilateur à compléter /sera/ disponible dans le dossier
+Le code du compilateur à compléter *sera* disponible dans le dossier
 [flap/](flap/).
 
 # Paramétrage
