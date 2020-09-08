@@ -1,0 +1,129 @@
+#+TITLE: Compilation 2020/2021 -- Journal du cours
+#+AUTHOR: Adrien Guatto
+#+EMAIL: guatto@irif.org
+#+LANGUAGE: fr
+#+OPTIONS: ^:nil p:nil
+* Cours 1 : Introduction <2020-09-07>
+** Présentation
+   Bienvenue en Master 1 !
+
+   [[mailto:guatto@irif.fr][Adrien Guatto]]
+
+   [[http://www.irif.fr/~guatto/][page perso]]
+
+   En TP, Peter Habermehl, qui se présentera.
+
+   Le cours et les TPs auront lieu si tout va bien en présentiel.
+
+   Cours : lundi 16h-18h dans cette salle (2035).
+
+   (Aujourd'hui, 16h-17h30 exceptionnellement.)
+
+   TP : vendredi 8h30-10h30 en 2001 à partir de la semaine prochaine.
+
+   Information pratique : la salle 2001 est réservée de 18h à 20h pour les
+   étudiants qui suivent le cours de protocole réseau en distanciel.
+** Contenu et objectifs du cours
+*** Introduction au cours
+    En licence, vous avez acquis les bases de l'informatique : appris à
+    programmer dans plusieurs langages, découvert l'algorithmique sous diverses
+    formes, vous êtes familiarisés avec l'utilisation d'un système UNIX, etc.
+
+    En master, on ouvre les boîtes noires ! Par exemple, le cours d'architecture
+    des ordinateurs vous initie au fonctionnement interne d'un processeur.
+
+    Dans ce cours, on ouvre la boîte noire des langages de programmation :
+    comment fonctionne un compilateur ? Comment passer d'un fichier texte
+    contenant du code source à un programme que votre processeur peut exécuter ?
+
+    Comprendre le fonctionnement des compilateurs est l'objectif affiché du
+    cours. Il y en a un deuxième, un peu caché : vous faire programmer, et
+    beaucoup ! Vous allez écrire un compilateur, en OCaml, tout au long du
+    semestre, en binôme, de façon guidée. Vous allez pour ce faire utiliser des
+    méthodes et outils de développement modernes : gestion de version, tests,
+    intégration continue, etc.
+*** Pourquoi étudier la compilation ?
+    Ce n'est pas une compétence directement mobilisable dans la plupart des
+    emplois de développeur, même si la demande pour des experts en compilation
+    est forte à l'international (exemple : compilation de JavaScript).
+
+    Mais comprendre comment fonctionne un compilateur vous transformeras en des
+    programmeurs plus /mûrs/, qui maîtrisent les fondements de leurs
+    outils. C'est une aide concrète lorsqu'on programme, et notamment lorsqu'on
+    débogue et qu'on a parfois besoin de regarder "sous le capot".
+
+    De plus, la compilation est un sujet pluridisciplinaire :
+    - architecture des ordinateurs,
+    - théorie des graphes
+    - théorie des langages et automates,
+    - sémantique des langages de programmation,
+    - génie logiciel,
+    - méthodes formelles...
+    Vous allez donc mettre en pratique et revisiter certains concepts que vous
+    avez vu dans d'autres cours, ce qui peut vous aider à les assimiler !
+
+    Il va sans dire que la réalisation du projet va aussi beaucoup augmenter
+    votre expérience de la programmation. Ce sera pour la majorité d'entre vous
+    l'occasion de vous confronter pour la première fois à une base de code
+    réaliste !
+** Fonctionnement du cours
+   Vous avez tous reçu une copie de la description du cours (son /syllabus/,
+   dans le jargon), aussi disponible en ligne sur la page du cours. Prenons le
+   temps de le lire ensemble.
+
+   Il se dégage plusieurs principes.
+
+   - Les séances de cours sont centrées sur la réalisation du projet, qui
+     oriente les concepts que je vais présenter et nos discussions. Elles se
+     veulent interactives et ouvertes à la discussion.
+
+   - Le projet est structuré en grandes étapes indépendantes, les /jalons/, qui
+     prennent la forme de code à trou : il faudra lire autant qu'écrire !
+
+   - Vous aurez les énoncés des jalons rapidement, et chaque séance de cours
+     débutera par 15 à 30 minutes de travail collectif au sujet des questions
+     que vous aurez préparées au sujet des jalons.
+
+   - Le bon fonctionnement des jalons sera évalué par une batterie de tests
+     automatiques.
+
+   Pour que le cours fonctionne, vos enseignants attendent de vous :
+
+   - que vous travailliez de façon continue et régulière tout le semestre,
+
+   - que vous rendiez vos jalons à temps (toutes les trois semaines environ),
+
+   - que vous prêtiez attention à la qualité du code,
+
+   - en cours : que vous preniez des notes tout en réfléchissant et questionnant
+     de façon critique la discussion,
+
+   - en TP : que vous posiez des questions et discutiez avec l'enseignant et vos
+     camarades,
+
+   - chez vous : que vous lisiez le code du projet ainsi que les documents
+     obligatoires et conseillées, que vous programmiez.
+
+   L'évaluation se fera sur votre compréhension du projet, estimée pour moitié
+   par la soutenance, pour moitié par un examen. La soutenance est individuelle,
+   on vous demandera d'expliquer votre code, et la qualité de celui-ci sera
+   prise en compte.
+** Introduction à la compilation : le micro-langage Marthe
+   Voir le fichier [[file:cours-01/marthe.ml][marthe.ml]].
+** Pour la prochaine fois
+*** TODO Forker le dépôt Git du projet
+    https://gaufre.informatique.univ-paris-diderot.fr/aguatto/compilation-m1-2020
+*** TODO Passer votre fork du dépôt en visibilité privée
+*** TODO Ajouter l'accès à l'équipe enseignante
+    - Adrien Guatto @aguatto
+    - Peter Habermehl @habermeh
+*** TODO Remplir le fichier AUTEURS du dépôt
+*** TODO S'inscrire sur la liste de diffusion du cours
+    https://listes.u-paris.fr/wws/info/m1.2020.compilation.info
+*** TODO Préparer le prochain cours
+**** TODO Lire la documentation de ocamllex
+     [[https://caml.inria.fr/pub/docs/manual-ocaml/lexyacc.html]]
+**** TODO Lire la documentation de menhir
+     [[http://pauillac.inria.fr/~fpottier/menhir/manual.pdf]]
+**** TODO Faire les exercices de marthe.ml
+**** TODO Vérifier son environnement de développement *avant* le TP
