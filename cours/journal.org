@@ -127,3 +127,50 @@
      [[http://pauillac.inria.fr/~fpottier/menhir/manual.pdf]]
 **** TODO Faire les exercices de marthe.ml
 **** TODO Vérifier son environnement de développement *avant* le TP
+* Cours 2 : Analyse lexicale et syntaxique (1/2) <2020-09-13>
+** Retour sur Marthe
+   On discute de nouveau du fichier [[file:cours-01/marthe.ml][marthe.ml]].
+*** Les exercices concernant la fonction ~lexer~
+    Ignorer les tabulations : ajouter '\t' au filtrage.
+
+    Rajouter '-' et '/' : ajouter deux constructeurs au type ~token~, et les cas
+    attenants dans le filtrage.
+
+    Ignorer les commentaires : utiliser par exemple une fonction récursive
+    interne qui ignorea les caractères compris entre les délimiteurs de
+    commentaires.
+*** La compilation vers une machine abstraite
+    Il faut lire le code de [[file:cours-01/marthe.ml][marthe.ml]], plus
+    précisément :
+    - la définition des types ~machine~ et ~instruction~ qui décrivent la
+      machine abstraite et ses états,
+    - les fonctions ~vm_init~ et ~vm_interpret~, surtout ~vm_interpret~ qui
+      implémente les transitions de la machine abstraite,
+    - la fonction ~compile~, qui traduit un arbre de syntaxe abstraite Marthe en
+      une séquence d'instructions pour la machine abstraite.
+*** Le parsing de Marthe
+    La semaine dernière, nous n'avons pas détaillé la fonction ~parse~.
+
+    Il est temps de nous y intéresser.
+
+    Cette fonction implémente un analyseur syntaxique pour la grammaire de
+    Marthe décrite en commentaire par le biais d'un jeu de fonctions
+    mutuellement récursives qui consomment progressivement le flot de lexèmes
+    fournis à ~parse~.
+
+    (Nous détaillons ensemble le code source de ~parse~.)
+
+    On discute ensuite de la notion de grammaire ambigue, non-ambigue, et l'idée
+    de se restreindre à des formes de grammaire spécifiques.
+*** Le TP de vendredi
+    Ce vendredi, vous allez aborder l'analyse lexicale et syntaxique en
+    utilisant des générateurs de code. Il vous faut lire les manuels d'ocamllex
+    et menhir pour vous préparer. On reviendra en détail sur le fonctionnement
+    de ces outils dans le cours suivant, et on discutera du jalon 1.
+** TODO Pour la prochaine fois
+*** TODO Faire les questions restantes de [[file:cours-01/marthe.ml][marthe.ml]]
+    Il reste le parsing, l'évaluation et la compilation.
+*** TODO Vérifier que son environnement de développement est prêt pour le TP
+    Avant vendredi : installer OCaml+OPAM, Tuareg, ocamllex, Menhir.
+*** TODO Lire l'énoncé du jalon 1, qui sera rendu disponible dans la semaine
+    On en discutera au début du cours suivant.

@@ -1,0 +1,172 @@
+\documentclass{article}
+\usepackage{packages}
+\usepackage{macros}
+\usepackage{options}
+
+\title{Compilation -- TP 1 ~: \\ OCamlLex et Menhir}
+
+\author{Université Paris Diderot -- Master 1}
+
+\date{(2020--2021)}
+
+\begin{document}
+
+\maketitle
+
+Les objectifs de cette séance de travaux pratiques sont:
+\begin{itemize}
+\item[\faSignIn]
+de comprendre les rôles respectifs de l'analyse lexicale et grammaticale
+dans l'analyse syntaxique ;
+
+\item[\faSignIn]
+de prendre connaissance des formats d'entrée des outils OCamllex et Menhir ;
+
+\item[\faSignIn]
+de comprendre la sémantique des spécifications OCamllex ;
+
+\item[\faSignIn]
+de comprendre la sémantique des spécifications Menhir ;
+
+\item[\faSignIn]
+de résoudre un conflit d'analyse grammaticale en spécifiant
+des priorités ;
+
+\item[\faSignIn]
+de résoudre un conflit d'analyse grammaticale en réécrivant
+une grammaire.
+
+\end{itemize}
+
+\medskip
+
+Les fichiers sources utilisés pour ces travaux pratiques sont sur le dépôt GIT à
+l'emplacement \verb!doc/td-menhir/code!.
+
+Pour réaliser ces travaux pratiques, votre environnement de travail doit
+inclure:
+%
+\begin{itemize}
+\item \verb!dune >= 1.6!
+\item \verb!menhir >= 20181113!
+\item \verb!ocaml >= 4.05.0!
+\end{itemize}
+
+Si vous travaillez depuis les machines de l'UFR, faites depuis la racine
+de votre compte.
+%
+\begin{verbatim}
+ln -s /ens/guatto/.opam
+\end{verbatim}
+
+La commande \verb!eval $(opam config env)! dans votre shell courant devrait
+configurer correctement votre environnement de travail. Rajoutez cette ligne
+à la fin de votre \verb!.bashrc!.
+
+\begin{exercise}[Prise en main du code source Marthe]
+  \-
+  \begin{enumerate}
+  \item
+    %
+    Quel est le rôle de chaque fichier source fourni?
+
+  \item
+    %
+    Compilez le code source.
+
+  \item
+    %
+    Expliquez les avertissements produits par la compilation.
+
+  \item
+    %
+    Après avoir lu \verb!marthe.ml!, expliquez ce que produise les entrées
+    suivantes:
+    %
+    \begin{itemize}
+    \item \verb!37!
+    \item \verb!1 + 2!
+    \item \verb!1 +!
+    \item \verb!1 + 2 + 3!
+    \end{itemize}
+  \end{enumerate}
+\end{exercise}
+
+\begin{exercise}[Compléter l'analyseur lexical]
+  \-
+  \begin{enumerate}
+  \item
+    Rajoutez une règle d'analyse lexicale pour reconnaître le
+    caractère \verb!*!  comme le lexème \verb!STAR!. Même chose pour
+    les parenthèses gauches et droites.
+
+  \item
+    %
+    Rajoutez une règle d'analyse lexicale pour reconnaître le mot-clé
+    \verb!sum!.  Comment s'assurer que la chaîne \verb!sum! est bien reconnu
+    comme ce mot-clé et non comme un identificateur?
+  \end{enumerate}
+\end{exercise}
+
+\begin{exercise}[Compléter l'analyseur grammatical]
+  \-
+  \begin{enumerate}
+  \item
+    Remplacez \verb!%left PLUS! par \verb!%right PLUS!. Quel est l'effet
+    de ce changement?
+
+  \item
+    Introduisez une règle pour reconnaître une multiplication. En étudiant
+    \verb!_build/target/parser.conflicts!, expliquez pourquoi cette introduction
+    provoque un conflit ``shift/reduce''.
+
+  \item
+    Après avoir rappelé les règles de spécification de priorité en Menhir,
+    résoudre le conflit introduit par la question précédente. Comment savoir
+    si vous avez correctement résolu le conflit?
+
+  \item
+    Complétez la grammaire pour reconnaître les expressions parenthésées.
+
+  \item
+    Complétez la grammaire pour reconnaître les expressions de la
+    forme \verb!sum (x, start, stop, body)!. Pourquoi cette nouvelle
+    règle ne rentre-t-elle pas en conflit avec la règle introduite par
+    la question précédente alors qu'elles partagent des lexèmes?
+  \end{enumerate}
+\end{exercise}
+
+\begin{exercise}[Pour les plus rapides]
+  \-
+  \begin{enumerate}
+  \item
+    %
+    Dans le premier cours, la syntaxe de Marthe était stratifiée à l'aide de
+    plusieurs non terminaux (factor, term, expression).  Modifiez votre
+    grammaire Menhir pour suivre cette grammaire stratifiée. Pourquoi cette
+    stratification fait-elle disparaître les conflits? Est-ce une grammaire
+    équivalente à la grammaire précédente?
+
+  \item
+    %
+    Modifiez la fonction \verb!eval! pour qu'elle calcule l'entier correspondant
+    à l'expression Marthe.
+
+  \item
+    %
+    Comment testez l'expression de l'utilisateur avant de l'évaluer pour être
+    sûr que son évaluation ne va pas échouée? Ecrivez une fonction \verb!check!
+    qui réalise ce test et produit un message d'erreur explicatif si une erreur
+    potentielle peut se produire. Comment se comporte votre fonction sur les
+    entrées suivantes :
+    \begin{itemize}
+    \item \verb!x!
+    \item \verb!sum (x, 0, 10, y)!
+    \item \verb!sum (x, 0, -10, y)!
+    \end{itemize}
+    ?
+
+  \end{enumerate}
+\end{exercise}
+
+\end{document}

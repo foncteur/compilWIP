@@ -1,0 +1,14 @@
+\newlength\codewidth
+\setlength{\codewidth}{15cm}
+\newenvironment{code}[1][\codewidth]{
+\begin{center}
+\Sbox
+\hspace{0.3cm}\minipage{#1}
+}{
+\endminipage
+\endSbox\fbox{\TheSbox}
+\end{center}
+}
+
+\newcommand{\icode}[1]{\texttt{#1}}
+\newcommand\many[1]{\overline{#1}}

@@ -1,13 +1,15 @@
 # Compilation M1 2020-2021
 
 Ce dépôt contient les documents (notes de cours, projet) relatives au cours de
-compilation de Master 1 Inforamtique en 2020-2021.
+compilation de Master 1 Informatique en 2020-2021.
 
 Les notes de cours sont disponibles dans le dossier [cours/](cours/). Voir en
 particulier le fichier texte [journal.org](cours/journal.org).
 
+Les énoncés des TPs du projet sont disponibles dans le dossier [tp/](tp/).
+
 Les énoncés des jalons du projet *seront* disponibles dans le dossier
-[projet](projet/).
+[projet/](projet/).
 
 Le code du compilateur à compléter *sera* disponible dans le dossier
 [flap/](flap/).
