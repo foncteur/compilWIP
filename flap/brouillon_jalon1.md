@@ -11,3 +11,4 @@ J'ai rajouté pour le moment le minimum de trucs pour avoir des tests qui passen
 2e commit : j'ai rajouté le parsing des types, toujours seulement 4 tests.
 
 3e commit : erreur idiote dans le lexer corrigée, on passe maintenant 10 tests.
+Tous les tests de type definition ne passent pas encore, il reste des choses à debug mais il se fait tard :)
