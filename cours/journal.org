@@ -174,3 +174,9 @@
     Avant vendredi : installer OCaml+OPAM, Tuareg, ocamllex, Menhir.
 *** TODO Lire l'énoncé du jalon 1, qui sera rendu disponible dans la semaine
     On en discutera au début du cours suivant.
+* Cours 3 : Analyse lexicale et syntaxique (2/2) <2020-09-21>
+** Introduction à l'analyse lexicale et syntaxique
+   Voir les [[file:cours-03/cours-03-parsing.pdf][transparents]].
+** Introduction à flap et au Jalon 1
+   Voir le [[file:../flap][code]] du compilateur Flap, ainsi que l'énoncé du
+   jalon 1, dans [[../jalons/jalon-1.pdf][jalon-1.pdf]].

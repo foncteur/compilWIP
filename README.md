@@ -8,16 +8,15 @@ particulier le fichier texte [journal.org](cours/journal.org).
 
 Les énoncés des TPs du projet sont disponibles dans le dossier [tp/](tp/).
 
-Les énoncés des jalons du projet *seront* disponibles dans le dossier
-[projet/](projet/).
+Les énoncés des jalons du projet sont disponibles dans le dossier
+[jalons/](jalons/).
 
-Le code du compilateur à compléter *sera* disponible dans le dossier
+Le code du compilateur à compléter est disponible dans le dossier
 [flap/](flap/).
 
 # Paramétrage
 
-Pour réaliser le projet, **une fois le code du compilateur disponible**, vous
-devrez :
+Pour réaliser le projet, vous devez :
 
 1. forker ce dépôt,
 
