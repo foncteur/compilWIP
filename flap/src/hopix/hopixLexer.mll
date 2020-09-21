@@ -35,28 +35,32 @@ rule token = parse
   | blank+          { token lexbuf               }
   | eof             { EOF       }
 
+  (** Keywords *)
+  | "fun" {FUN}
+  | "and" {AND}
+  | "type" {TYPE}
+
   (** Identifiers *)
   | lower_identifier as s {IDLOW s}
   | upper_identifier as s {IDUP s}
 
-  (** Keywords *)
-  | "fun" {FUN}
-  | "and" {AND}
-
   (** Operators *)
   | "=" {EQUAL}
   | "_" {UNDERSCORE}
-  | "'" {QUOTE}
+  | "`" {QUOTE}
   | ":" {COLON}
   | "(" {LPAREN}
   | ")" {RPAREN}
   | "[" {LBRACKET}
   | "]" {RBRACKET}
+  | "{" {LBRACE}
+  | "}" {RBRACE}
   | "<" {LT}
   | ">" {GT}
   | "," {COMMA}
   | "->" {ARROW}
   | "*" {STAR}
+  | "|" {BAR}
 
   (** Lexing error. *)
   | _               { error lexbuf "unexpected character." }

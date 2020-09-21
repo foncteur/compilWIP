@@ -7,9 +7,9 @@
 %}
 
 %token EOF
-%token EQUAL UNDERSCORE QUOTE COLON COMMA ARROW STAR
-%token LPAREN RPAREN LBRACKET RBRACKET LT GT
-%token FUN AND
+%token EQUAL UNDERSCORE QUOTE COLON COMMA ARROW STAR BAR
+%token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE LT GT
+%token FUN AND TYPE
 %token<string> IDLOW IDUP
 
 
@@ -17,15 +17,64 @@
 
 %%
 
-program: d=located(definition) EOF
+program: l=list(located(definition)) EOF
 {
-   [d]
+   l
 }
 
 
-definition: v=vdefinition
+definition:
+| TYPE x=located(type_con)
+{
+  DefineType(x, [], Abstract)
+}
+| TYPE x=located(type_con) EQUAL t=tdefinition
+{
+  DefineType(x, [], t)
+}
+| TYPE x=located(type_con) LT l=separated_nonempty_list(COMMA, located(type_variable)) GT
+{
+  DefineType(x, l, Abstract)
+}
+| TYPE x=located(type_con) LT l=separated_nonempty_list(COMMA, located(type_variable)) GT EQUAL t=tdefinition
+{
+  DefineType(x, l, t)
+}
+|v=vdefinition
 {
   DefineValue v
+}
+
+sum_elem_tdefinition:
+| x=located(constructor)
+{
+  (x, [])
+}
+| x=located(constructor) LPAREN l=separated_nonempty_list(COMMA, located(ty)) RPAREN
+{
+  (x, l)
+}
+
+label:
+| x=IDLOW
+{
+  LId x
+}
+
+record_elem_tdefinition:
+| x=located(label) COLON t=located(ty)
+{
+  (x,t)
+}
+
+tdefinition:
+| option(BAR) l=separated_nonempty_list(BAR, sum_elem_tdefinition)
+{
+  DefineSumType l
+}
+| LBRACE l=separated_nonempty_list(COMMA, record_elem_tdefinition) RBRACE
+{
+  DefineRecordType l
 }
 
 vdefinition:
