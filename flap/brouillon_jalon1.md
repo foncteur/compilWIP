@@ -7,3 +7,5 @@ Pour type\_variable, je fais le choix de renvoyer le token "quote" au début, et
 Note : pour l'instant, un int c'est juste un éventuel - et une suite de chiffres, je ne gère pas encore l'hexadécimal, le binaire ou l'octal (on verra plus tard).
 
 J'ai rajouté pour le moment le minimum de trucs pour avoir des tests qui passent, il y en a déjà 4. To be continued...
+
+2e commit : j'ai rajouté le parsing des types, toujours seulement 4 tests.
