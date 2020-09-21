@@ -41,10 +41,22 @@ rule token = parse
 
   (** Keywords *)
   | "fun" {FUN}
+  | "and" {AND}
 
   (** Operators *)
   | "=" {EQUAL}
   | "_" {UNDERSCORE}
+  | "'" {QUOTE}
+  | ":" {COLON}
+  | "(" {LPAREN}
+  | ")" {RPAREN}
+  | "[" {LBRACKET}
+  | "]" {RBRACKET}
+  | "<" {LT}
+  | ">" {GT}
+  | "," {COMMA}
+  | "->" {ARROW}
+  | "*" {STAR}
 
   (** Lexing error. *)
   | _               { error lexbuf "unexpected character." }
