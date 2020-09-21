@@ -19,6 +19,14 @@ let newline = ('\010' | '\013' | "\013\010")
 let blank   = [' ' '\009' '\012']
 
 let digit = ['0'-'9']
+let number = "-"? ['0'-'9']+
+
+
+(** A lower_identifier is an identifier beginning with a lowercase letter *)
+let lower_identifier = ['a'-'z']['A'-'Z' '0'-'9' 'a'-'z' '_']*
+
+(** An upper_identifier is an identifier beginning with an uppercase letter *)
+let upper_identifier = ['A'-'Z']['A'-'Z' '0'-'9' 'a'-'z' '_']*
 
 
 rule token = parse
@@ -27,6 +35,16 @@ rule token = parse
   | blank+          { token lexbuf               }
   | eof             { EOF       }
 
+  (** Identifiers *)
+  | lower_identifier as s {IDLOW s}
+  | upper_identifier as s {IDUP s}
+
+  (** Keywords *)
+  | "fun" {FUN}
+
+  (** Operators *)
+  | "=" {EQUAL}
+  | "_" {UNDERSCORE}
+
   (** Lexing error. *)
   | _               { error lexbuf "unexpected character." }
-
