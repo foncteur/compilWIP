@@ -9,3 +9,5 @@ Note : pour l'instant, un int c'est juste un éventuel - et une suite de chiffre
 J'ai rajouté pour le moment le minimum de trucs pour avoir des tests qui passent, il y en a déjà 4. To be continued...
 
 2e commit : j'ai rajouté le parsing des types, toujours seulement 4 tests.
+
+3e commit : erreur idiote dans le lexer corrigée, on passe maintenant 10 tests.
