@@ -98,7 +98,7 @@ constructor:
 type_variable:
 | QUOTE x=IDLOW
 {
-  TId x
+  TId ("`"^x)
 }
 
 fundef:
