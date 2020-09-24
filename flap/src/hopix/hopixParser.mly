@@ -9,7 +9,7 @@
 %token EOF
 %token EQUAL UNDERSCORE QUOTE COLON COMMA ARROW STAR BAR
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE LT GT
-%token FUN AND TYPE
+%token FUN AND TYPE EXTERN LET
 %token<string> IDLOW IDUP INT STRING CHAR
 
 
@@ -39,6 +39,10 @@ definition:
 | TYPE x=located(type_con) LT l=separated_nonempty_list(COMMA, located(type_variable)) GT EQUAL t=tdefinition
 {
   DefineType(x, l, t)
+}
+| EXTERN x=located(identifier) COLON t=located(type_scheme)
+{
+  DeclareExtern(x,t)
 }
 |v=vdefinition
 {
@@ -78,6 +82,10 @@ tdefinition:
 }
 
 vdefinition:
+| LET x=located(identifier) t=option(preceded(COLON, located(type_scheme))) EQUAL e=located(expr)
+{
+  SimpleValue(x,t,e)
+}
 | FUN l=separated_nonempty_list(AND, fundef)
 {
   RecFunctions l

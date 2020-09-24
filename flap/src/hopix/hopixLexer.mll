@@ -58,6 +58,8 @@ rule token = parse
   | "fun" {FUN}
   | "and" {AND}
   | "type" {TYPE}
+  | "extern" {EXTERN}
+  | "let" {LET}
 
   (** Identifiers *)
   | lower_identifier as s {IDLOW s}
