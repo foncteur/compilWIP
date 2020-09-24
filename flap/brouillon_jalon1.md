@@ -13,4 +13,6 @@ J'ai rajouté pour le moment le minimum de trucs pour avoir des tests qui passen
 3e commit : erreur idiote dans le lexer corrigée, on passe maintenant 10 tests.
 Tous les tests de type definition ne passent pas encore, il reste des choses à debug mais il se fait tard :)
 
-4e commit : c'est bon j'ai débugué le parsing des définitions de type ! 
+4e commit : c'est bon j'ai débugué le parsing des définitions de type !
+
+5e commit : on peut lexer des ints (y compris en hexa, binaire ou octal), des char et des strings. Par contre, on ne vérifie pas encore que les ints sont pas trop grands.
