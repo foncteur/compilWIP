@@ -9,7 +9,7 @@
 %token EOF
 %token EQUAL UNDERSCORE QUOTE COLON SEMICOLON COMMA ARROW STAR BAR DOT BACKSLASH
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE LT GT
-%token FUN AND TYPE EXTERN LET SWITCH IF ELSE REF 
+%token FUN AND TYPE EXTERN LET SWITCH IF ELSE REF
 %token WHILE FOR IN TO
 %token PLUS MINUS DIVIDE ASSIGN ANDOP OR READ
 %token ISEQUAL ISLEQ ISGEQ ISLT ISGT
@@ -184,7 +184,11 @@ literal:
   LString (s)
 }
 
-expr:
+expr5:
+| LPAREN e=expr RPAREN
+{
+  e
+}
 | l=located(literal)
 {
   Literal l
@@ -203,13 +207,70 @@ expr:
 }
 | LPAREN e=located(expr) COMMA l=separated_nonempty_list(COMMA, located(expr)) RPAREN
 {
-  Tuple (e::l) 
+  Tuple (e::l)
 }
-| e=located(expr) DOT v=located(label)
+| LPAREN e=located(expr) COLON t=located(ty) RPAREN
+{
+  TypeAnnotation (e, t)
+}
+| e=located(expr5) DOT v=located(label)
 {
   Field (e, v)
 }
-| e1=located(expr) SEMICOLON e2=located(expr)
+| IF LPAREN econd=located(expr) RPAREN LBRACE ethen=located(expr) RBRACE ELSE LBRACE eelse=located(expr) RBRACE
+{
+  IfThenElse (econd, ethen, eelse)
+}
+| WHILE LPAREN econd=located(expr) RPAREN LBRACE ebody=located(expr) RBRACE
+{
+  While (econd, ebody)
+}
+| FOR v=located(identifier) IN LPAREN estart=located(expr) TO estop=located(expr) RPAREN LBRACE ebody=located(expr) RBRACE
+{
+  For (v, estart, estop, ebody)
+}
+
+expr4:
+| e=expr5
+{
+  e
+}
+| REF e=located(expr4)
+{
+  Ref e
+}
+| READ e=located(expr4)
+{
+  Read e
+}
+
+expr3:
+| e=expr4
+{
+  e
+}
+| e1=located(expr3) e2=located(expr4)
+{
+  Apply (e1, e2)
+}
+
+
+expr2:
+| e=expr3
+{
+  e
+}
+| e1=located(expr3) ASSIGN e2=located(expr2)
+{
+  Assign (e1, e2)
+}
+
+expr:
+| e=expr2
+{
+  e
+}
+| e1=located(expr2) SEMICOLON e2=located(expr)
 {
   Sequence [e1; e2]
 }
@@ -221,43 +282,9 @@ expr:
 {
   Fun (FunctionDefinition (p, e))
 }
-| e1=located(expr) e2=located(expr)
-{
-  Apply (e1, e2)
-}
 (*| SWITCH LPAREN e=located(expr) RPAREN LBRACE *)
-| IF LPAREN econd=located(expr) RPAREN LBRACE ethen=located(expr) RBRACE ELSE LBRACE eelse=located(expr) RBRACE
-{
-  IfThenElse (econd, ethen, eelse)
-}
-| REF e=located(expr)
-{
-  Ref e
-}
-| e1=located(expr) ASSIGN e2=located(expr)
-{
-  Assign (e1, e2)
-}
-| READ e=located(expr)
-{
-  Read e
-}
-| WHILE LPAREN econd=located(expr) RPAREN LBRACE ebody=located(expr) RBRACE
-{
-  While (econd, ebody)
-}
-| FOR v=located(identifier) IN LPAREN estart=located(expr) TO estop=located(expr) RPAREN LBRACE ebody=located(expr) RBRACE 
-{
-  For (v, estart, estop, ebody)
-}
-| LPAREN e=expr RPAREN 
-{
-  e 
-}
-| LPAREN e=located(expr) COLON t=located(ty) RPAREN 
-{
-  TypeAnnotation (e, t)
-}
+
+
 
 pattern:
 | UNDERSCORE
