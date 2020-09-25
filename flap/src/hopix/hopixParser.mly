@@ -201,9 +201,9 @@ expr:
 {
   Tagged (x, None, [])
 }
-| LPAREN l=separated_nonempty_list(COMMA, located(expr)) RPAREN
+| LPAREN e=located(expr) COMMA l=separated_nonempty_list(COMMA, located(expr)) RPAREN
 {
-  Tuple l 
+  Tuple (e::l) 
 }
 | e=located(expr) DOT v=located(label)
 {
