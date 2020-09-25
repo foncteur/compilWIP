@@ -64,6 +64,7 @@ rule token = parse
   | "if"      { IF      }
   | "else"    { ELSE    }
   | "ref"     { REF     }
+  | "while"   { WHILE   }
 
   (** Identifiers *)
   | lower_identifier as s   { IDLOW s }    
