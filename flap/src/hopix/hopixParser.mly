@@ -254,6 +254,10 @@ expr:
 {
   e 
 }
+| LPAREN e=located(expr) COLON t=located(ty) RPAREN 
+{
+  TypeAnnotation (e, t)
+}
 
 pattern:
 | UNDERSCORE
