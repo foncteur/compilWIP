@@ -63,6 +63,7 @@ rule token = parse
   | "switch"  { SWITCH  }
   | "if"      { IF      }
   | "else"    { ELSE    }
+  | "ref"     { REF     }
 
   (** Identifiers *)
   | lower_identifier as s   { IDLOW s }    
