@@ -194,6 +194,10 @@ expr:
 {
   Variable(v,Some l)
 }
+| x=located(constructor)
+{
+  Tagged (x, None, [])
+}
 | LPAREN l=separated_nonempty_list(COMMA, located(expr)) RPAREN
 {
   Tuple l 
@@ -214,10 +218,12 @@ expr:
 {
   Fun (FunctionDefinition (p, e))
 }
-| x=located(constructor)
+| e1=located(expr) e2=located(expr)
 {
-  Tagged (x, None, [])
+  Apply (e1, e2)
 }
+
+
 
 pattern:
 | UNDERSCORE
