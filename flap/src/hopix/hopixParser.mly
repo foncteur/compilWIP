@@ -9,7 +9,8 @@
 %token EOF
 %token EQUAL UNDERSCORE QUOTE COLON SEMICOLON COMMA ARROW STAR BAR DOT BACKSLASH
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE LT GT
-%token FUN AND TYPE EXTERN LET SWITCH IF ELSE REF WHILE
+%token FUN AND TYPE EXTERN LET SWITCH IF ELSE REF 
+%token WHILE FOR IN TO
 %token PLUS MINUS DIVIDE ASSIGN ANDOP OR READ
 %token ISEQUAL ISLEQ ISGEQ ISLT ISGT
 %token<string> IDLOW IDUP INT STRING CHAR
@@ -244,6 +245,10 @@ expr:
 | WHILE LPAREN econd=located(expr) RPAREN LBRACE ebody=located(expr) RBRACE
 {
   While (econd, ebody)
+}
+| FOR v=located(identifier) IN LPAREN estart=located(expr) TO estop=located(expr) RPAREN LBRACE ebody=located(expr) RBRACE 
+{
+  For (v, estart, estop, ebody)
 }
 
 pattern:
