@@ -1,0 +1,285 @@
+
+** Conflict (shift/reduce) in state 149.
+** Tokens involved: SEMICOLON LET FUN
+** The following explanations concentrate on token LET.
+** This state is reached from program after reading:
+
+LET identifier option(preceded(COLON,located(type_scheme))) EQUAL expr 
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+list(located(definition)) EOF 
+(?)
+
+** In state 149, looking ahead at LET, shifting is permitted
+** because of the following sub-derivation:
+
+definition list(located(definition)) 
+vdefinition 
+LET identifier option(preceded(COLON,located(type_scheme))) EQUAL expr 
+                                                                  expr expr 
+                                                                       vdefinition SEMICOLON expr 
+                                                                       . LET identifier option(preceded(COLON,located(type_scheme))) EQUAL expr 
+
+** In state 149, looking ahead at LET, reducing production
+** vdefinition -> LET identifier option(preceded(COLON,located(type_scheme))) EQUAL expr 
+** is permitted because of the following sub-derivation:
+
+definition list(located(definition)) // lookahead token appears because list(located(definition)) can begin with LET
+vdefinition // lookahead token is inherited
+LET identifier option(preceded(COLON,located(type_scheme))) EQUAL expr . 
+
+** Conflict (shift/reduce) in state 143.
+** Tokens involved: WHILE STRING SEMICOLON REF READ LPAREN LET INT IF IDUP IDLOW FUN FOR DOT BACKSLASH ASSIGN
+** The following explanations concentrate on token WHILE.
+** This state is reached from program after reading:
+
+LET identifier option(preceded(COLON,located(type_scheme))) EQUAL REF expr 
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+list(located(definition)) EOF 
+definition list(located(definition)) 
+vdefinition 
+LET identifier option(preceded(COLON,located(type_scheme))) EQUAL expr 
+                                                                  (?)
+
+** In state 143, looking ahead at WHILE, reducing production
+** expr -> REF expr 
+** is permitted because of the following sub-derivation:
+
+expr expr // lookahead token appears because expr can begin with WHILE
+REF expr . 
+
+** In state 143, looking ahead at WHILE, shifting is permitted
+** because of the following sub-derivation:
+
+REF expr 
+    expr expr 
+         . WHILE LPAREN expr RPAREN LBRACE expr RBRACE 
+
+** Conflict (shift/reduce) in state 142.
+** Tokens involved: WHILE STRING SEMICOLON REF READ LPAREN LET INT IF IDUP IDLOW FUN FOR DOT BACKSLASH ASSIGN
+** The following explanations concentrate on token WHILE.
+** This state is reached from program after reading:
+
+LET identifier option(preceded(COLON,located(type_scheme))) EQUAL READ expr 
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+list(located(definition)) EOF 
+definition list(located(definition)) 
+vdefinition 
+LET identifier option(preceded(COLON,located(type_scheme))) EQUAL expr 
+                                                                  (?)
+
+** In state 142, looking ahead at WHILE, reducing production
+** expr -> READ expr 
+** is permitted because of the following sub-derivation:
+
+expr expr // lookahead token appears because expr can begin with WHILE
+READ expr . 
+
+** In state 142, looking ahead at WHILE, shifting is permitted
+** because of the following sub-derivation:
+
+READ expr 
+     expr expr 
+          . WHILE LPAREN expr RPAREN LBRACE expr RBRACE 
+
+** Conflict (shift/reduce) in state 118.
+** Tokens involved: SEMICOLON LET FUN
+** The following explanations concentrate on token LET.
+** This state is reached from program after reading:
+
+FUN option(preceded(COLON,located(type_scheme))) identifier pattern EQUAL expr 
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+list(located(definition)) EOF 
+(?)
+
+** In state 118, looking ahead at LET, reducing production
+** fundef -> option(preceded(COLON,located(type_scheme))) identifier pattern EQUAL expr 
+** is permitted because of the following sub-derivation:
+
+definition list(located(definition)) // lookahead token appears because list(located(definition)) can begin with LET
+vdefinition // lookahead token is inherited
+FUN separated_nonempty_list(AND,fundef) // lookahead token is inherited
+    fundef // lookahead token is inherited
+    option(preceded(COLON,located(type_scheme))) identifier pattern EQUAL expr . 
+
+** In state 118, looking ahead at LET, shifting is permitted
+** because of the following sub-derivation:
+
+definition list(located(definition)) 
+vdefinition 
+FUN separated_nonempty_list(AND,fundef) 
+    fundef 
+    option(preceded(COLON,located(type_scheme))) identifier pattern EQUAL expr 
+                                                                          expr expr 
+                                                                               vdefinition SEMICOLON expr 
+                                                                               . LET identifier option(preceded(COLON,located(type_scheme))) EQUAL expr 
+
+** Conflict (shift/reduce) in state 110.
+** Tokens involved: WHILE STRING SEMICOLON REF READ LPAREN LET INT IF IDUP IDLOW FUN FOR DOT BACKSLASH ASSIGN
+** The following explanations concentrate on token WHILE.
+** This state is reached from program after reading:
+
+LET identifier option(preceded(COLON,located(type_scheme))) EQUAL BACKSLASH pattern ARROW expr 
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+list(located(definition)) EOF 
+definition list(located(definition)) 
+vdefinition 
+LET identifier option(preceded(COLON,located(type_scheme))) EQUAL expr 
+                                                                  (?)
+
+** In state 110, looking ahead at WHILE, reducing production
+** expr -> BACKSLASH pattern ARROW expr 
+** is permitted because of the following sub-derivation:
+
+expr expr // lookahead token appears because expr can begin with WHILE
+BACKSLASH pattern ARROW expr . 
+
+** In state 110, looking ahead at WHILE, shifting is permitted
+** because of the following sub-derivation:
+
+BACKSLASH pattern ARROW expr 
+                        expr expr 
+                             . WHILE LPAREN expr RPAREN LBRACE expr RBRACE 
+
+** Conflict (shift/reduce) in state 108.
+** Tokens involved: WHILE STRING SEMICOLON REF READ LPAREN LET INT IF IDUP IDLOW FUN FOR DOT BACKSLASH ASSIGN
+** The following explanations concentrate on token WHILE.
+** This state is reached from program after reading:
+
+LET identifier option(preceded(COLON,located(type_scheme))) EQUAL expr expr 
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+list(located(definition)) EOF 
+definition list(located(definition)) 
+vdefinition 
+LET identifier option(preceded(COLON,located(type_scheme))) EQUAL expr 
+                                                                  (?)
+
+** In state 108, looking ahead at WHILE, reducing production
+** expr -> expr expr 
+** is permitted because of the following sub-derivation:
+
+expr expr // lookahead token appears because expr can begin with WHILE
+expr expr . 
+
+** In state 108, looking ahead at WHILE, shifting is permitted
+** because of the following sub-derivation:
+
+expr expr 
+     expr expr 
+          . WHILE LPAREN expr RPAREN LBRACE expr RBRACE 
+
+** Conflict (shift/reduce) in state 107.
+** Tokens involved: WHILE STRING SEMICOLON REF READ LPAREN LET INT IF IDUP IDLOW FUN FOR DOT BACKSLASH ASSIGN
+** The following explanations concentrate on token WHILE.
+** This state is reached from program after reading:
+
+LET identifier option(preceded(COLON,located(type_scheme))) EQUAL expr ASSIGN expr 
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+list(located(definition)) EOF 
+definition list(located(definition)) 
+vdefinition 
+LET identifier option(preceded(COLON,located(type_scheme))) EQUAL expr 
+                                                                  (?)
+
+** In state 107, looking ahead at WHILE, reducing production
+** expr -> expr ASSIGN expr 
+** is permitted because of the following sub-derivation:
+
+expr expr // lookahead token appears because expr can begin with WHILE
+expr ASSIGN expr . 
+
+** In state 107, looking ahead at WHILE, shifting is permitted
+** because of the following sub-derivation:
+
+expr ASSIGN expr 
+            expr expr 
+                 . WHILE LPAREN expr RPAREN LBRACE expr RBRACE 
+
+** Conflict (shift/reduce) in state 103.
+** Tokens involved: WHILE STRING SEMICOLON REF READ LPAREN LET INT IF IDUP IDLOW FUN FOR DOT BACKSLASH ASSIGN
+** The following explanations concentrate on token WHILE.
+** This state is reached from program after reading:
+
+LET identifier option(preceded(COLON,located(type_scheme))) EQUAL expr SEMICOLON expr 
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+list(located(definition)) EOF 
+definition list(located(definition)) 
+vdefinition 
+LET identifier option(preceded(COLON,located(type_scheme))) EQUAL expr 
+                                                                  (?)
+
+** In state 103, looking ahead at WHILE, reducing production
+** expr -> expr SEMICOLON expr 
+** is permitted because of the following sub-derivation:
+
+expr expr // lookahead token appears because expr can begin with WHILE
+expr SEMICOLON expr . 
+
+** In state 103, looking ahead at WHILE, shifting is permitted
+** because of the following sub-derivation:
+
+expr SEMICOLON expr 
+               expr expr 
+                    . WHILE LPAREN expr RPAREN LBRACE expr RBRACE 
+
+** Conflict (shift/reduce) in state 101.
+** Tokens involved: WHILE STRING SEMICOLON REF READ LPAREN LET INT IF IDUP IDLOW FUN FOR DOT BACKSLASH ASSIGN
+** The following explanations concentrate on token WHILE.
+** This state is reached from program after reading:
+
+LET identifier option(preceded(COLON,located(type_scheme))) EQUAL vdefinition SEMICOLON expr 
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+list(located(definition)) EOF 
+definition list(located(definition)) 
+vdefinition 
+LET identifier option(preceded(COLON,located(type_scheme))) EQUAL expr 
+                                                                  (?)
+
+** In state 101, looking ahead at WHILE, reducing production
+** expr -> vdefinition SEMICOLON expr 
+** is permitted because of the following sub-derivation:
+
+expr expr // lookahead token appears because expr can begin with WHILE
+vdefinition SEMICOLON expr . 
+
+** In state 101, looking ahead at WHILE, shifting is permitted
+** because of the following sub-derivation:
+
+vdefinition SEMICOLON expr 
+                      expr expr 
+                           . WHILE LPAREN expr RPAREN LBRACE expr RBRACE 
