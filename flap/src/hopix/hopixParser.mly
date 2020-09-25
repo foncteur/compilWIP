@@ -7,8 +7,8 @@
 %}
 
 %token EOF
-%token EQUAL UNDERSCORE QUOTE COLON SEMICOLON COMMA ARROW STAR BAR
-%token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE LT GT DOT
+%token EQUAL UNDERSCORE QUOTE COLON SEMICOLON COMMA ARROW STAR BAR DOT BACKSLASH
+%token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE LT GT
 %token FUN AND TYPE EXTERN LET 
 %token<string> IDLOW IDUP INT STRING CHAR
 
@@ -209,6 +209,10 @@ expr:
 | v=vdefinition SEMICOLON e=located(expr)
 {
   Define (v,e)
+}
+| BACKSLASH p=located(pattern) ARROW e=located(expr)
+{
+  Fun (FunctionDefinition (p, e))
 }
 | x=located(constructor)
 {

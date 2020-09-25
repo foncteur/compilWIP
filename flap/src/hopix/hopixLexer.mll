@@ -62,40 +62,40 @@ rule token = parse
   | "let" {LET}
 
   (** Identifiers *)
-  | lower_identifier as s {IDLOW s}
-  | upper_identifier as s {IDUP s}
+  | lower_identifier as s   {   IDLOW s }    
+  | upper_identifier as s   {   IDUP s  }
 
   (** Integers *)
-  | number_dec as s {INT s}
-  | number_hexa as s {INT s}
-  | number_bin as s {INT s}
-  | number_oct as s {INT s}
+  | number_dec as s     {   INT s   }
+  | number_hexa as s    {   INT s   }
+  | number_bin as s     {   INT s   }
+  | number_oct as s     {   INT s   }
 
-  | char as c {CHAR c}
-  | string as s {STRING s}
+  | char as c     {   CHAR c    }
+  | string as s   {   STRING s  }
 
 
 
 
   (** Operators *)
-  | "=" {EQUAL}
-  | "_" {UNDERSCORE}
-  | "`" {QUOTE}
-  | ":" {COLON}
-  | ";" {SEMICOLON}
-  | "(" {LPAREN}
-  | ")" {RPAREN}
-  | "[" {LBRACKET}
-  | "]" {RBRACKET}
-  | "{" {LBRACE}
-  | "}" {RBRACE}
-  | "<" {LT}
-  | ">" {GT}
-  | "," {COMMA}
-  | "->" {ARROW}
-  | "*" {STAR}
-  | "|" {BAR}
-  | "." {DOT}
+  | "="   {   EQUAL       }
+  | "_"   {   UNDERSCORE  }
+  | "`"   {   QUOTE       }
+  | ":"   {   COLON       }
+  | ";"   {   SEMICOLON   }
+  | "("   {   LPAREN      }
+  | ")"   {   RPAREN      }
+  | "["   {   LBRACKET    }
+  | "]"   {   RBRACKET    }
+  | "{"   {   LBRACE      }
+  | "}"   {   RBRACE      }
+  | "<"   {   LT          }   
+  | ">"   {   GT          }
+  | ","   {   COMMA       }   
+  | "->"  {   ARROW       }
+  | "*"   {   STAR        }
+  | "|"   {   BAR         }
+  | "."   {   DOT         }
 
   (** Lexing error. *)
   | _               { error lexbuf "unexpected character." }
