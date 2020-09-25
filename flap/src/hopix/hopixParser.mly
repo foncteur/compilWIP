@@ -194,6 +194,10 @@ expr:
 {
   Variable(v,Some l)
 }
+| LPAREN l=separated_nonempty_list(COMMA, located(expr)) RPAREN
+{
+  Tuple l 
+}
 | x=located(constructor)
 {
   Tagged (x, None, [])
