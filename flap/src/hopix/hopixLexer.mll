@@ -61,6 +61,8 @@ rule token = parse
   | "extern"  { EXTERN  }
   | "let"     { LET     }
   | "switch"  { SWITCH  }
+  | "if"      { IF      }
+  | "else"    { ELSE    }
 
   (** Identifiers *)
   | lower_identifier as s   { IDLOW s }    
@@ -83,7 +85,7 @@ rule token = parse
   | "+"   { PLUS        }
   | "-"   { MINUS       }
   | "/"   { DIVIDE      }
-  | "&&"  { AND         }
+  | "&&"  { ANDOP       }
   | "||"  { OR          }
   | "=?"  { ISEQUAL     }
   | "<=?" { ISLEQ       }
