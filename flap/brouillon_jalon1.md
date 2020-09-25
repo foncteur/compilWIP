@@ -18,3 +18,8 @@ Tous les tests de type definition ne passent pas encore, il reste des choses à 
 5e commit : on peut lexer des ints (y compris en hexa, binaire ou octal), des char et des strings. Par contre, on ne vérifie pas encore que les ints sont pas trop grands.
 
 6e commit : je bosse sur les expressions. Pour l'instant je passe sur char. 
+
+(B) Travail lors du TD
+1er commit : j'ai rajouté le cas des n-uplet pour les expressions
+
+2e commit : j'ai rajouté le cas de l'accès à un champ, il a fallu rajouter le lexer dot pour cela

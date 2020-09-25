@@ -7,7 +7,7 @@
 %}
 
 %token EOF
-%token EQUAL UNDERSCORE QUOTE COLON COMMA ARROW STAR BAR
+%token EQUAL UNDERSCORE QUOTE COLON SEMICOLON COMMA ARROW STAR BAR
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE LT GT DOT
 %token FUN AND TYPE EXTERN LET 
 %token<string> IDLOW IDUP INT STRING CHAR
@@ -201,6 +201,10 @@ expr:
 | e=located(expr) DOT v=located(label)
 {
   Field (e, v)
+}
+| e1=located(expr) SEMICOLON e2=located(expr)
+{
+  Sequence [e1; e2]
 }
 | x=located(constructor)
 {

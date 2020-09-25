@@ -82,6 +82,7 @@ rule token = parse
   | "_" {UNDERSCORE}
   | "`" {QUOTE}
   | ":" {COLON}
+  | ";" {SEMICOLON}
   | "(" {LPAREN}
   | ")" {RPAREN}
   | "[" {LBRACKET}
