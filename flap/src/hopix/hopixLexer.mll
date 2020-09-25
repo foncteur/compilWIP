@@ -89,6 +89,7 @@ rule token = parse
   | ":="  { ASSIGN      }
   | "&&"  { ANDOP       }
   | "||"  { OR          }
+  | "!"   { READ        }
 
   (** Comparison *)
   | "=?"  { ISEQUAL     }
