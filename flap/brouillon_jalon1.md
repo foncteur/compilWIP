@@ -45,3 +45,9 @@ REMARQUE : en regardant les résultats de 'make test' pour while j'ai vu qu'il y
 11e commit : ajout du cas while, ajout du lexer while (+0 test passé)
 
 12e commit : ajout du cas for, ajout du lexer for (+0 test passé)
+
+13e commit : ajout du cas du parenthésage. ATTENTION ce commit a provoqué un conflit avec le cas des n-uplet car il inclut le 1-uplet (équivalent au parenthésage donc). Je résout ce problème dans le commit suivant ! (+1 test passé)
+
+14e commit : résolution du conflit shift/reduce mentionné au 13e commit (+0 test passé, -1 conflit)
+
+15e commit : ajout du cas de l'annotation de type (+1 test passé)
