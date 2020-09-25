@@ -171,7 +171,29 @@ type_scheme:
   ForallTy (l, t)
 }
 
+literal:
+| i=INT
+{
+  LInt (Mint.of_string i)
+}
+| s=STRING
+{
+  LString (s)
+}
+
 expr:
+| l=located(literal)
+{
+  Literal l
+}
+| v=located(identifier)
+{
+  Variable (v,None)
+}
+| v=located(identifier) LBRACKET l=separated_nonempty_list(COMMA, located(ty)) RBRACKET
+{
+  Variable(v,Some l)
+}
 | x=located(constructor)
 {
   Tagged (x, None, [])

@@ -16,3 +16,5 @@ Tous les tests de type definition ne passent pas encore, il reste des choses à 
 4e commit : c'est bon j'ai débugué le parsing des définitions de type !
 
 5e commit : on peut lexer des ints (y compris en hexa, binaire ou octal), des char et des strings. Par contre, on ne vérifie pas encore que les ints sont pas trop grands.
+
+6e commit : je bosse sur les expressions. Pour l'instant je passe sur char. 
