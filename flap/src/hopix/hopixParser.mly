@@ -206,6 +206,10 @@ expr:
 {
   Sequence [e1; e2]
 }
+| v=vdefinition SEMICOLON e=located(expr)
+{
+  Define (v,e)
+}
 | x=located(constructor)
 {
   Tagged (x, None, [])
