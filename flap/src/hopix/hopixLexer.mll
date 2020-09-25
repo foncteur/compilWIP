@@ -86,8 +86,11 @@ rule token = parse
   | "+"   { PLUS        }
   | "-"   { MINUS       }
   | "/"   { DIVIDE      }
+  | ":="  { ASSIGN      }
   | "&&"  { ANDOP       }
   | "||"  { OR          }
+
+  (** Comparison *)
   | "=?"  { ISEQUAL     }
   | "<=?" { ISLEQ       }
   | ">=?" { ISGEQ       }
