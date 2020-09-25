@@ -94,6 +94,7 @@ rule token = parse
   | "->" {ARROW}
   | "*" {STAR}
   | "|" {BAR}
+  | "." {DOT}
 
   (** Lexing error. *)
   | _               { error lexbuf "unexpected character." }

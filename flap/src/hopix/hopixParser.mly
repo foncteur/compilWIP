@@ -8,8 +8,8 @@
 
 %token EOF
 %token EQUAL UNDERSCORE QUOTE COLON COMMA ARROW STAR BAR
-%token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE LT GT
-%token FUN AND TYPE EXTERN LET
+%token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE LT GT DOT
+%token FUN AND TYPE EXTERN LET 
 %token<string> IDLOW IDUP INT STRING CHAR
 
 
@@ -197,6 +197,10 @@ expr:
 | LPAREN l=separated_nonempty_list(COMMA, located(expr)) RPAREN
 {
   Tuple l 
+}
+| e=located(expr) DOT v=located(label)
+{
+  Field (e, v)
 }
 | x=located(constructor)
 {
