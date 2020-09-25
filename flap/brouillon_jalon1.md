@@ -19,9 +19,29 @@ Tous les tests de type definition ne passent pas encore, il reste des choses à 
 
 6e commit : je bosse sur les expressions. Pour l'instant je passe sur char. 
 
-(B) Travail lors du TD
+(B) Travail du vendredi 25 septembre
+REMARQUE : en regardant les résultats de 'make test' pour while j'ai vu qu'il y avait le mot clé 'True' (et donc 'False' j'imagine). Sauf que je ne l'ai pas vu sur le doc donc il faudra gérer ça !!
+
 1er commit : j'ai rajouté le cas des n-uplet pour les expressions (+1 test passé)
 
 2e commit : j'ai rajouté le cas de l'accès à un champ, il a fallu rajouter le lexer dot pour cela (+2 tests passés)
 
-3e commit : j'ai rajouter le cas d'une séquence d'expression, il a fallu rajouter le lexer semicolon pour cela (+0 test passé, c'est curieux !)
+3e commit : j'ai rajouté le cas d'une séquence d'expression, il a fallu rajouter le lexer semicolon pour cela (+0 test passé, c'est curieux !)
+
+4e commit : j'ai rajouté le cas d'une définition locale, il y a fallu rajouter le lexer backslash pour cela (+0 test passé)
+
+5e commit : j'ai rajouté le cas d'une application (+5 tests passés)
+
+6e commit : préparation du cas de l'application infixe d'un opérateur binaire par l'ajout des lexers correspondant
+
+7e commit : ajout du cas de if-then-else, il a fallu rajouter les lexer if et else pour cela (+3 tests passés)
+
+8e commit : ajout du cas de ref, il a fallu rajouter le lexer ref pour cela (+0 test passé)
+
+9e commit : ajout du cas de l'assignation, ajout du lexer assign (+2 tests passés)
+
+10e commit : ajout du cas de la lecture, ajout du lexer read (+2 tests passés)
+
+11e commit : ajout du cas while, ajout du lexer while (+0 test passé)
+
+12e commit : ajout du cas for, ajout du lexer for (+0 test passé)

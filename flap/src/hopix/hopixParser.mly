@@ -250,6 +250,10 @@ expr:
 {
   For (v, estart, estop, ebody)
 }
+| LPAREN e=expr RPAREN 
+{
+  e 
+}
 
 pattern:
 | UNDERSCORE
