@@ -85,7 +85,7 @@ tdefinition:
 }
 
 vdefinition:
-| LET x=located(identifier) t=option(preceded(COLON, located(type_scheme))) EQUAL e=located(expr)
+| LET x=located(identifier) t=option(preceded(COLON, located(type_scheme))) EQUAL e=located(expr1)
 {
   SimpleValue(x,t,e)
 }
@@ -113,7 +113,7 @@ type_variable:
 }
 
 fundef:
-| t=option(preceded(COLON, located(type_scheme))) x=located(identifier) p=located(pattern) EQUAL e=located(expr)
+| t=option(preceded(COLON, located(type_scheme))) x=located(identifier) p=located(pattern) EQUAL e=located(expr1)
 {
   (x, t, FunctionDefinition (p,e))
 }
@@ -265,8 +265,22 @@ expr2:
   Assign (e1, e2)
 }
 
-expr:
+expr1:
 | e=expr2
+{
+  e
+}
+| BACKSLASH p=located(pattern) ARROW e=located(expr1)
+{
+  Fun (FunctionDefinition (p, e))
+}
+| v=vdefinition SEMICOLON e=located(expr)
+{
+  Define (v,e)
+}
+
+expr:
+| e=expr1
 {
   e
 }
@@ -274,14 +288,7 @@ expr:
 {
   Sequence [e1; e2]
 }
-| v=vdefinition SEMICOLON e=located(expr)
-{
-  Define (v,e)
-}
-| BACKSLASH p=located(pattern) ARROW e=located(expr)
-{
-  Fun (FunctionDefinition (p, e))
-}
+
 (*| SWITCH LPAREN e=located(expr) RPAREN LBRACE *)
 
 
