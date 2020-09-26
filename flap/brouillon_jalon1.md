@@ -17,7 +17,7 @@ Tous les tests de type definition ne passent pas encore, il reste des choses à 
 
 5e commit : on peut lexer des ints (y compris en hexa, binaire ou octal), des char et des strings. Par contre, on ne vérifie pas encore que les ints sont pas trop grands.
 
-6e commit : je bosse sur les expressions. Pour l'instant je passe sur char. 
+6e commit : je bosse sur les expressions. Pour l'instant je passe sur char.
 
 (B) Travail du vendredi 25 septembre
 REMARQUE : en regardant les résultats de 'make test' pour while j'ai vu qu'il y avait le mot clé 'True' (et donc 'False' j'imagine). Sauf que je ne l'ai pas vu sur le doc donc il faudra gérer ça !!
@@ -51,3 +51,7 @@ REMARQUE : en regardant les résultats de 'make test' pour while j'ai vu qu'il y
 14e commit : résolution du conflit shift/reduce mentionné au 13e commit (+0 test passé, -1 conflit)
 
 15e commit : ajout du cas de l'annotation de type (+1 test passé)
+
+(O) travail du 25 septembre au soir et du 26 septembre
+
+J'ai essayé de résoudre les conflits, on est passés de 110 à 1. Celui qui reste implique vdefinition, donc j'ai encore stratifié expr (en rajoutant expr1), mais ça ne suffit pas. On est maintenant à 61 tests passés. Je vais continuer de réfléchir à comment résoudre ce conflit restant, mais cela n'empêche pas d'avancer surle reste.
