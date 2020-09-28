@@ -310,10 +310,15 @@ branch:
 }
 
 pattern:
+| id=located(identifier)
+{
+  PVariable id
+}
 | UNDERSCORE
 {
   PWildcard
 }
+
 
 %inline located(X): x=X {
   Position.with_poss $startpos $endpos x
