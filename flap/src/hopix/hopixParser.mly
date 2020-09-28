@@ -322,6 +322,10 @@ pattern:
 {
   PTuple l 
 }
+| p=located(pattern) COLON t=located(ty)
+{
+  PTypeAnnotation (p, t)
+}
 
 
 %inline located(X): x=X {
