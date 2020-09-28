@@ -309,6 +309,12 @@ branch:
   Branch (p, e)
 }
 
+record_elem_pattern:
+| l=located(label) EQUAL p=located(pattern)
+{
+  (l, p)
+}
+
 pattern1:
 | id=located(identifier)
 {
@@ -330,7 +336,10 @@ pattern1:
 {
   PTaggedValue (c, Some tys, ps)
 }
-
+| LBRACE l=separated_nonempty_list(COMMA, record_elem_pattern) RBRACE LBRACKET tys=separated_nonempty_list(COMMA, located(ty)) RBRACKET
+{
+  PRecord (l, Some tys)
+}
 
 pattern:
 | p=located(pattern1) COLON t=located(ty2)
