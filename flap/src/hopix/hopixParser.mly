@@ -217,6 +217,10 @@ expr5:
 {
   Field (e, v)
 }
+| SWITCH LPAREN e=located(expr) RPAREN LBRACE option(BAR) l=separated_nonempty_list(BAR, located(branch)) RBRACE
+{
+  Case (e, l)
+}
 | IF LPAREN econd=located(expr) RPAREN LBRACE ethen=located(expr) RBRACE ELSE LBRACE eelse=located(expr) RBRACE
 {
   IfThenElse (econd, ethen, eelse)
@@ -289,9 +293,11 @@ expr:
   Sequence [e1; e2]
 }
 
-(*| SWITCH LPAREN e=located(expr) RPAREN LBRACE *)
-
-
+branch:
+| p=located(pattern) ARROW e=located(expr)
+{
+  Branch (p, e)
+}
 
 pattern:
 | UNDERSCORE
