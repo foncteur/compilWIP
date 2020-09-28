@@ -184,6 +184,12 @@ literal:
   LString (s)
 }
 
+record_elem_expr:
+| l=located(label) EQUAL e=located(expr)
+{
+  (l, e)
+}
+
 expr5:
 | LPAREN e=expr RPAREN
 {
@@ -204,6 +210,10 @@ expr5:
 | x=located(constructor)
 {
   Tagged (x, None, [])
+}
+| LBRACE llabel=separated_nonempty_list(COMMA, record_elem_expr) RBRACE LBRACKET lty=separated_nonempty_list(COMMA, located(ty)) RBRACKET
+{
+  Record (llabel, Some lty)
 }
 | LPAREN e=located(expr) COMMA l=separated_nonempty_list(COMMA, located(expr)) RPAREN
 {
