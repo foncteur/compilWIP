@@ -318,6 +318,10 @@ pattern:
 {
   PWildcard
 }
+| LPAREN l=separated_nonempty_list(COMMA, located(pattern)) RPAREN
+{
+  PTuple l 
+}
 
 
 %inline located(X): x=X {
