@@ -309,7 +309,7 @@ branch:
   Branch (p, e)
 }
 
-pattern:
+pattern1:
 | id=located(identifier)
 {
   PVariable id
@@ -322,9 +322,15 @@ pattern:
 {
   PTuple l 
 }
-| p=located(pattern) COLON t=located(ty)
+
+pattern:
+| p=located(pattern1) COLON t=located(ty2)
 {
   PTypeAnnotation (p, t)
+} 
+| p=pattern1
+{
+  p
 }
 
 

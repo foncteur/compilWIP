@@ -55,3 +55,15 @@ REMARQUE : en regardant les résultats de 'make test' pour while j'ai vu qu'il y
 (O) travail du 25 septembre au soir et du 26 septembre
 
 J'ai essayé de résoudre les conflits, on est passés de 110 à 1. Celui qui reste implique vdefinition, donc j'ai encore stratifié expr (en rajoutant expr1), mais ça ne suffit pas. On est maintenant à 61 tests passés. Je vais continuer de réfléchir à comment résoudre ce conflit restant, mais cela n'empêche pas d'avancer surle reste.
+
+(B) Travail du 28 septembre
+
+1er commit : ajout du cas switch, en ajoutant le parser branch (+0 tests passés, +0 conflits)
+
+2e commit : ajout du cas de la construction d'un enregistrement, ajout du parser record_elem_expr pour cela (+0 tests passés, +0 conflits)
+
+3e commit : Début du parsing de pattern. Ajout du cas du motif universel liant pour pattern (+8 tests passés, +0 conflits)
+
+4e commit : ajout du N-uplet pour pattern (+4 tests passés, +0 conflits)
+
+5e commit : ajout de l'annotation de type (+0 test passé, +1 conflit)
