@@ -15,7 +15,6 @@
 %token ISEQUAL ISLEQ ISGEQ ISLT ISGT
 %token<string> IDLOW IDUP INT STRING CHAR
 
-
 %start<HopixAST.t> program
 
 %%

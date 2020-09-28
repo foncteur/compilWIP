@@ -67,3 +67,11 @@ J'ai essayé de résoudre les conflits, on est passés de 110 à 1. Celui qui re
 4e commit : ajout du N-uplet pour pattern (+4 tests passés, +0 conflits)
 
 5e commit : ajout de l'annotation de type (+0 test passé, +1 conflit)
+
+6e commit : Résolution du shift/reduce conflict dû à l'ajout précédent (+0 test passé, -1 conflit)
+
+7e commit : ajout des litteraux (+0 test passé, +0 conflit)
+
+8e commit : ajout de la disjonction (+0 test passé, +0 conflit)
+
+9e commit : ajout de la conjugaison (+0 test passé, +0 conflit)

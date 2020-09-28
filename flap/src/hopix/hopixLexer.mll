@@ -92,7 +92,7 @@ rule token = parse
   | "/"   { DIVIDE      }
   | ":="  { ASSIGN      }
   | "&&"  { ANDOP       }
-  | "||"  { OR          }
+  | "||"  { OROP        }
   | "!"   { READ        }
 
   (** Comparison *)
