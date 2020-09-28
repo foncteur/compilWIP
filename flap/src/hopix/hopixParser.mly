@@ -322,6 +322,11 @@ pattern1:
 {
   PTuple l 
 }
+| l=located(literal)
+{
+  PLiteral l 
+}
+
 
 pattern:
 | p=located(pattern1) COLON t=located(ty2)
