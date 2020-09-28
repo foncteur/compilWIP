@@ -119,6 +119,7 @@ rule token = parse
   | ";"   { SEMICOLON   }
   | ","   { COMMA       }   
   | "|"   { BAR         }
+  | "&"   { AMPERSAND   }
   | "\\"  { BACKSLASH   }
 
   (** Lexing error. *)

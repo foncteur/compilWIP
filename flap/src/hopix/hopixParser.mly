@@ -7,7 +7,7 @@
 %}
 
 %token EOF
-%token EQUAL UNDERSCORE QUOTE COLON SEMICOLON COMMA ARROW STAR BAR DOT BACKSLASH
+%token EQUAL UNDERSCORE QUOTE COLON SEMICOLON COMMA ARROW STAR BAR DOT BACKSLASH AMPERSAND
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE LT GT
 %token FUN AND TYPE EXTERN LET SWITCH IF ELSE REF
 %token WHILE FOR IN TO
@@ -345,6 +345,10 @@ pattern:
 | p=located(pattern1) COLON t=located(ty2)
 {
   PTypeAnnotation (p, t)
+}
+| p1=located(pattern1) BAR p2=located(pattern)
+{
+  POr [p1 ; p2]
 } 
 | p=pattern1
 {
