@@ -349,7 +349,11 @@ pattern:
 | p1=located(pattern1) BAR p2=located(pattern)
 {
   POr [p1 ; p2]
-} 
+}
+| p1=located(pattern1) AMPERSAND p2=located(pattern)
+{
+  PAnd [p1 ; p2]
+}
 | p=pattern1
 {
   p
