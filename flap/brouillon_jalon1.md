@@ -75,3 +75,7 @@ J'ai essayé de résoudre les conflits, on est passés de 110 à 1. Celui qui re
 8e commit : ajout de la disjonction (+0 test passé, +0 conflit)
 
 9e commit : ajout de la conjugaison (+0 test passé, +0 conflit)
+
+(O) Travail du 1er octobre
+
+1er commit : gestion des erreurs, on passe 146 tests
