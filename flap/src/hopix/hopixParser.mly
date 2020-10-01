@@ -19,9 +19,14 @@
 
 %%
 
-program: l=list(located(definition)) EOF
+program:
+|l=list(located(definition)) EOF
 {
    l
+}
+|error
+{
+  Error.error "parsing" (Position.lex_join $startpos $endpos) "Syntax error."
 }
 
 
@@ -325,11 +330,11 @@ pattern1:
 }
 | LPAREN l=separated_nonempty_list(COMMA, located(pattern)) RPAREN
 {
-  PTuple l 
+  PTuple l
 }
 | l=located(literal)
 {
-  PLiteral l 
+  PLiteral l
 }
 | c=located(constructor) LBRACKET tys=separated_nonempty_list(COMMA, located(ty)) RBRACKET LPAREN ps=separated_nonempty_list(COMMA, located(pattern)) RPAREN
 {
