@@ -1,9 +1,9 @@
 
-** Conflict (shift/reduce) in state 161.
-** Token involved: SEMICOLON
+** Conflict (shift/reduce) in state 165.
+** Token involved: LPAREN
 ** This state is reached from program after reading:
 
-LET identifier option(preceded(COLON,located(type_scheme))) EQUAL LPAREN vdefinition SEMICOLON expr1 
+LET identifier option(preceded(COLON,located(type_scheme))) EQUAL constructor LBRACKET separated_nonempty_list(COMMA,located(ty)) RBRACKET 
 
 ** The derivations that appear below have the following common factor:
 ** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
@@ -15,22 +15,20 @@ vdefinition
 LET identifier option(preceded(COLON,located(type_scheme))) EQUAL expr1 
                                                                   expr2 
                                                                   expr3 
-                                                                  expr4 
-                                                                  expr5 
-                                                                  LPAREN expr RPAREN 
-                                                                         (?)
+                                                                  (?)
 
-** In state 161, looking ahead at SEMICOLON, reducing production
-** expr -> expr1 
+** In state 165, looking ahead at LPAREN, reducing production
+** expr5 -> constructor LBRACKET separated_nonempty_list(COMMA,located(ty)) RBRACKET 
 ** is permitted because of the following sub-derivation:
 
-expr1 SEMICOLON expr // lookahead token appears
-vdefinition SEMICOLON expr // lookahead token is inherited
-                      expr1 . 
+expr3 expr4 // lookahead token appears because expr4 can begin with LPAREN
+expr4 // lookahead token is inherited
+expr5 // lookahead token is inherited
+constructor LBRACKET separated_nonempty_list(COMMA,located(ty)) RBRACKET . 
 
-** In state 161, looking ahead at SEMICOLON, shifting is permitted
+** In state 165, looking ahead at LPAREN, shifting is permitted
 ** because of the following sub-derivation:
 
-expr1 
-vdefinition SEMICOLON expr 
-                      expr1 . SEMICOLON expr 
+expr4 
+expr5 
+constructor LBRACKET separated_nonempty_list(COMMA,located(ty)) RBRACKET . LPAREN separated_nonempty_list(COMMA,located(expr1)) RPAREN 

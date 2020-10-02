@@ -217,6 +217,14 @@ expr5:
 {
   Tagged (x, None, [])
 }
+(*| x=located(constructor) LBRACKET tys=separated_nonempty_list(COMMA, located(ty)) RBRACKET
+{
+  Tagged (x, Some tys, [])
+}*)
+| x=located(constructor) LBRACKET tys=separated_nonempty_list(COMMA, located(ty)) RBRACKET LPAREN es=separated_nonempty_list(COMMA, located(expr)) RPAREN
+{
+  Tagged (x, Some tys, es)
+}
 | LBRACE llabel=separated_nonempty_list(COMMA, record_elem_expr) RBRACE
 {
   Record (llabel, None)
