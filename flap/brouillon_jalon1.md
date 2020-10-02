@@ -80,10 +80,14 @@ J'ai essayé de résoudre les conflits, on est passés de 110 à 1. Celui qui re
 
 1er commit : gestion des erreurs, on passe 146 tests
 
-(B) Travail du 2 octobre
+(B) Travail du 2 octobre : pour le 5e commit, je n'ai pas encore fait le cas où l'on peut spécifier le type d'un constructeur sans donner d'expression ensuite. Si on gère le cas en question, cela rentre en conflit avec le pattern de l'application (expr expr). Je dois réfléchir là dessus...
 
 1er commit : ajout de la boucle do...while (+0 test passé, +0 conflit)
 
 2e commit : résolution du shift/reduce conflict dû à SEMICOLON (+0 test passé, -1 conflit)
 
-3e commit : Ajout de l'enregistrement sans spécifier le type (+4 test passé, +0 conflit)
+3e commit : Ajout de l'enregistrement sans spécifier le type (+4 tests passés, +0 conflit)
+
+4e commit : Ajout de parsing sans spécifier le type pour pattern (+2 tests passés, +0 conflit)
+
+5e commit : Ajout de parsing de certains cas optionnels (+0 test passé, +0 conflit)
