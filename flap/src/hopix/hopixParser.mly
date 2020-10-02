@@ -217,6 +217,10 @@ expr5:
 {
   Tagged (x, None, [])
 }
+| LBRACE llabel=separated_nonempty_list(COMMA, record_elem_expr) RBRACE
+{
+  Record (llabel, None)
+}
 | LBRACE llabel=separated_nonempty_list(COMMA, record_elem_expr) RBRACE LBRACKET lty=separated_nonempty_list(COMMA, located(ty)) RBRACKET
 {
   Record (llabel, Some lty)
