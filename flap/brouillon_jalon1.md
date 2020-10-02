@@ -79,3 +79,7 @@ J'ai essayé de résoudre les conflits, on est passés de 110 à 1. Celui qui re
 (O) Travail du 1er octobre
 
 1er commit : gestion des erreurs, on passe 146 tests
+
+(B) Travail du 2 octobre
+
+1er commit : ajout de la boucle do...while (+0 test passé, +0 conflit)

@@ -17,14 +17,16 @@
 
 %start<HopixAST.t> program
 
+%right SEMICOLON
+
 %%
 
 program:
-|l=list(located(definition)) EOF
+| l=list(located(definition)) EOF
 {
    l
 }
-|error
+| error
 {
   Error.error "parsing" (Position.lex_join $startpos $endpos) "Syntax error."
 }
@@ -51,7 +53,7 @@ definition:
 {
   DeclareExtern(x,t)
 }
-|v=vdefinition
+| v=vdefinition
 {
   DefineValue v
 }
@@ -306,7 +308,7 @@ expr:
 {
   e
 }
-| e1=located(expr2) SEMICOLON e2=located(expr)
+| e1=located(expr) SEMICOLON e2=located(expr)
 {
   Sequence [e1; e2]
 }
