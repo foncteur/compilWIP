@@ -68,6 +68,7 @@ rule token = parse
   | "for"     { FOR     }
   | "in"      { IN      }
   | "to"      { TO      }
+  | "do"      { DO      }
 
   (** Identifiers *)
   | lower_identifier as s   { IDLOW s }    

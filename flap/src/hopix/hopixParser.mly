@@ -10,7 +10,7 @@
 %token EQUAL UNDERSCORE QUOTE COLON SEMICOLON COMMA ARROW STAR BAR DOT BACKSLASH AMPERSAND
 %token LPAREN RPAREN LBRACKET RBRACKET LBRACE RBRACE LT GT
 %token FUN AND TYPE EXTERN LET SWITCH IF ELSE REF
-%token WHILE FOR IN TO
+%token WHILE DO FOR IN TO
 %token PLUS MINUS DIVIDE ASSIGN ANDOP OROP READ
 %token ISEQUAL ISLEQ ISGEQ ISLT ISGT
 %token<string> IDLOW IDUP INT STRING CHAR
@@ -240,6 +240,10 @@ expr5:
   IfThenElse (econd, ethen, eelse)
 }
 | WHILE LPAREN econd=located(expr) RPAREN LBRACE ebody=located(expr) RBRACE
+{
+  While (econd, ebody)
+}
+| DO LBRACE ebody=located(expr) RBRACE WHILE LPAREN econd=located(expr) RPAREN 
 {
   While (econd, ebody)
 }

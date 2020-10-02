@@ -61,6 +61,8 @@ and expression =
   | IfThenElse of expression located * expression located * expression located
   (** An unbounded loop of the form [while (...) { ... }]. *)
   | While of expression located * expression located
+  (** An unbounded loop of the form [do {...} while (...)] *)
+  | DoWhile of expression located * expression located
   (** A bounded loop of the form [for x in (e₁ to e₂) { ... }]. *)
   | For of
       identifier located
