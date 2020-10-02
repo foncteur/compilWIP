@@ -83,3 +83,7 @@ J'ai essayé de résoudre les conflits, on est passés de 110 à 1. Celui qui re
 (B) Travail du 2 octobre
 
 1er commit : ajout de la boucle do...while (+0 test passé, +0 conflit)
+
+2e commit : résolution du shift/reduce conflict dû à SEMICOLON (+0 test passé, -1 conflit)
+
+3e commit : Ajout de l'enregistrement sans spécifier le type (+4 test passé, +0 conflit)

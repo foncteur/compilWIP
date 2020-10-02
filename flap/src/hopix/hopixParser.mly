@@ -346,9 +346,17 @@ pattern1:
 {
   PLiteral l
 }
+| c=located(constructor) LPAREN ps=separated_nonempty_list(COMMA, located(pattern)) RPAREN
+{
+  PTaggedValue (c, None, ps)
+}
 | c=located(constructor) LBRACKET tys=separated_nonempty_list(COMMA, located(ty)) RBRACKET LPAREN ps=separated_nonempty_list(COMMA, located(pattern)) RPAREN
 {
   PTaggedValue (c, Some tys, ps)
+}
+| LBRACE l=separated_nonempty_list(COMMA, record_elem_pattern) RBRACE 
+{
+  PRecord (l, None)
 }
 | LBRACE l=separated_nonempty_list(COMMA, record_elem_pattern) RBRACE LBRACKET tys=separated_nonempty_list(COMMA, located(ty)) RBRACKET
 {
