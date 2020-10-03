@@ -1,1 +1,1 @@
-let x = map < list<int>, ((int * int) * int) >
+let x = map < list<int>, (int * int * int) >
