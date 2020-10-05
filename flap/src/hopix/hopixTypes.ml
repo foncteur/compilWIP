@@ -184,6 +184,7 @@ type typing_environment = {
   type_constructors : (type_constructor * (int * type_information)) list;
   type_variables    : type_variable list;
 }
+
 and type_information =
   | Abstract
   | Sum of constructor list
