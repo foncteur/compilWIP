@@ -3,6 +3,10 @@
   open HopixAST
   open Position
 
+  let mkbinop e1 p e2 name =
+    let pos = Position.position p in
+    let pos2 = Position.join (Position.position e1) pos in
+    Apply(Position.with_pos pos2 (Apply (Position.with_pos pos (Variable (Position.with_pos pos (Id ("`" ^ name ^ "`")), None)), e1)), e2)
 
 %}
 
@@ -13,7 +17,8 @@
 %token WHILE DO FOR IN TO
 %token PLUS MINUS DIVIDE ASSIGN ANDOP OROP READ
 %token ISEQUAL ISLEQ ISGEQ ISLT ISGT
-%token<string> IDLOW IDUP INT STRING CHAR
+%token<char> CHAR
+%token<string> IDLOW IDUP INT STRING
 
 %start<HopixAST.t> program
 
@@ -189,6 +194,10 @@ literal:
 {
   LString (s)
 }
+| c=CHAR
+{
+  LChar (c)
+}
 
 record_elem_expr:
 | l=located(label) EQUAL e=located(expr)
@@ -209,7 +218,7 @@ expr5:
 {
   Variable (v,None)
 }
-| v=located(identifier) LBRACKET l=separated_nonempty_list(COMMA, located(ty)) RBRACKET
+| v=located(identifier) LT l=separated_list(COMMA, located(ty)) GT
 {
   Variable(v,Some l)
 }
@@ -217,11 +226,11 @@ expr5:
 {
   Tagged (x, None, [])
 }
-(*| x=located(constructor) LBRACKET tys=separated_nonempty_list(COMMA, located(ty)) RBRACKET
+| x=located(constructor) LT tys=separated_list(COMMA, located(ty)) GT
 {
   Tagged (x, Some tys, [])
-}*)
-| x=located(constructor) LBRACKET tys=separated_nonempty_list(COMMA, located(ty)) RBRACKET LPAREN es=separated_nonempty_list(COMMA, located(expr)) RPAREN
+}
+| x=located(constructor) LT tys=separated_list(COMMA, located(ty)) GT LPAREN es=separated_nonempty_list(COMMA, located(expr)) RPAREN
 {
   Tagged (x, Some tys, es)
 }
@@ -257,7 +266,7 @@ expr5:
 {
   While (econd, ebody)
 }
-| DO LBRACE ebody=located(expr) RBRACE WHILE LPAREN econd=located(expr) RPAREN 
+| DO LBRACE ebody=located(expr) RBRACE WHILE LPAREN econd=located(expr) RPAREN
 {
   While (econd, ebody)
 }
@@ -290,9 +299,90 @@ expr3:
   Apply (e1, e2)
 }
 
+expr2c:
+| e=expr3
+{
+  e
+}
+
+expr2b:
+| e=expr2c
+{
+  e
+}
+| e1=located(expr2b) p=located(STAR) e2=located(expr2c)
+{
+  mkbinop e1 p e2 "*"
+}
+| e1=located(expr2b) p=located(DIVIDE) e2=located(expr2c)
+{
+  mkbinop e1 p e2 "/"
+}
+
+expr2a:
+| e=expr2b
+{
+  e
+}
+| e1=located(expr2a) p=located(PLUS) e2=located(expr2b)
+{
+  mkbinop e1 p e2 "+"
+}
+| e1=located(expr2a) p=located(MINUS) e2=located(expr2b)
+{
+  mkbinop e1 p e2 "-"
+}
+
+expr2ac:
+| e=expr2a
+{
+  e
+}
+| e1=located(expr2ac) p=located(ANDOP) e2=located(expr2a)
+{
+  mkbinop e1 p e2 "&&"
+}
+
+expr2ab:
+| e=expr2ac
+{
+  e
+}
+| e1=located(expr2ab) p=located(OROP) e2=located(expr2ac)
+{
+  mkbinop e1 p e2 "||"
+}
+
+
+expr2aa:
+| e=expr2ab
+{
+  e
+}
+| e1=located(expr2ab) p=located(ISEQUAL) e2=located(expr2ab)
+{
+  mkbinop e1 p e2 "=?"
+}
+| e1=located(expr2ab) p=located(ISLEQ) e2=located(expr2ab)
+{
+  mkbinop e1 p e2 "<=?"
+}
+| e1=located(expr2ab) p=located(ISGEQ) e2=located(expr2ab)
+{
+  mkbinop e1 p e2 ">=?"
+}
+| e1=located(expr2ab) p=located(ISLT) e2=located(expr2ab)
+{
+  mkbinop e1 p e2 "<?"
+}
+| e1=located(expr2ab) p=located(ISGT) e2=located(expr2ab)
+{
+  mkbinop e1 p e2 ">?"
+}
+
 
 expr2:
-| e=expr3
+| e=expr2aa
 {
   e
 }
@@ -362,7 +452,7 @@ pattern1:
 {
   PTaggedValue (c, Some tys, ps)
 }
-| LBRACE l=separated_nonempty_list(COMMA, record_elem_pattern) RBRACE 
+| LBRACE l=separated_nonempty_list(COMMA, record_elem_pattern) RBRACE
 {
   PRecord (l, None)
 }
