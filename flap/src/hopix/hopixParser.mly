@@ -238,7 +238,7 @@ expr5:
 {
   Record (llabel, None)
 }
-| LBRACE llabel=separated_nonempty_list(COMMA, record_elem_expr) RBRACE LBRACKET lty=separated_nonempty_list(COMMA, located(ty)) RBRACKET
+| LBRACE llabel=separated_nonempty_list(COMMA, record_elem_expr) RBRACE LT lty=separated_nonempty_list(COMMA, located(ty)) GT
 {
   Record (llabel, Some lty)
 }
@@ -436,19 +436,31 @@ pattern1:
 {
   PWildcard
 }
-| LPAREN l=separated_nonempty_list(COMMA, located(pattern)) RPAREN
+| LPAREN p=pattern RPAREN
 {
-  PTuple l
+  p
+}
+| LPAREN p=located(pattern) COMMA l=separated_nonempty_list(COMMA, located(pattern)) RPAREN
+{
+  PTuple (p :: l)
 }
 | l=located(literal)
 {
   PLiteral l
 }
+| c=located(constructor)
+{
+  PTaggedValue (c, None, [])
+}
+| c=located(constructor) LT tys=separated_nonempty_list(COMMA, located(ty)) GT
+{
+  PTaggedValue (c, Some tys, [])
+}
 | c=located(constructor) LPAREN ps=separated_nonempty_list(COMMA, located(pattern)) RPAREN
 {
   PTaggedValue (c, None, ps)
 }
-| c=located(constructor) LBRACKET tys=separated_nonempty_list(COMMA, located(ty)) RBRACKET LPAREN ps=separated_nonempty_list(COMMA, located(pattern)) RPAREN
+| c=located(constructor) LT tys=separated_nonempty_list(COMMA, located(ty)) GT LPAREN ps=separated_nonempty_list(COMMA, located(pattern)) RPAREN
 {
   PTaggedValue (c, Some tys, ps)
 }
@@ -456,7 +468,7 @@ pattern1:
 {
   PRecord (l, None)
 }
-| LBRACE l=separated_nonempty_list(COMMA, record_elem_pattern) RBRACE LBRACKET tys=separated_nonempty_list(COMMA, located(ty)) RBRACKET
+| LBRACE l=separated_nonempty_list(COMMA, record_elem_pattern) RBRACE LT tys=separated_nonempty_list(COMMA, located(ty)) GT
 {
   PRecord (l, Some tys)
 }
@@ -466,13 +478,13 @@ pattern:
 {
   PTypeAnnotation (p, t)
 }
-| p1=located(pattern1) BAR p2=located(pattern)
+| p1=located(pattern1) BAR p2=separated_nonempty_list(BAR, located(pattern1))
 {
-  POr [p1 ; p2]
+  POr (p1 :: p2)
 }
-| p1=located(pattern1) AMPERSAND p2=located(pattern)
+| p1=located(pattern1) AMPERSAND p2=separated_nonempty_list(AMPERSAND, located(pattern1))
 {
-  PAnd [p1 ; p2]
+  PAnd (p1 :: p2)
 }
 | p=pattern1
 {
