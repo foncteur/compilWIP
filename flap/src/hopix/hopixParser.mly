@@ -22,7 +22,8 @@
 
 %start<HopixAST.t> program
 
-%right SEMICOLON
+%nonassoc CONSTR
+%nonassoc LPAREN
 
 %%
 
@@ -58,7 +59,7 @@ definition:
 {
   DeclareExtern(x,t)
 }
-| v=vdefinition
+| v=vdefinition(expr)
 {
   DefineValue v
 }
@@ -95,12 +96,12 @@ tdefinition:
   DefineRecordType l
 }
 
-vdefinition:
-| LET x=located(identifier) t=option(preceded(COLON, located(type_scheme))) EQUAL e=located(expr1)
+vdefinition(EXPR):
+| LET x=located(identifier) t=option(preceded(COLON, located(type_scheme))) EQUAL e=located(EXPR)
 {
   SimpleValue(x,t,e)
 }
-| FUN l=separated_nonempty_list(AND, fundef)
+| FUN l=separated_nonempty_list(AND, fundef(EXPR))
 {
   RecFunctions l
 }
@@ -123,8 +124,8 @@ type_variable:
   TId ("`"^x)
 }
 
-fundef:
-| t=option(preceded(COLON, located(type_scheme))) x=located(identifier) p=located(pattern) EQUAL e=located(expr1)
+fundef(EXPR):
+| t=option(preceded(COLON, located(type_scheme))) x=located(identifier) p=located(pattern) EQUAL e=located(EXPR)
 {
   (x, t, FunctionDefinition (p,e))
 }
@@ -222,13 +223,17 @@ expr5:
 {
   Variable(v,Some l)
 }
-| x=located(constructor)
+| x=located(constructor) %prec CONSTR
 {
   Tagged (x, None, [])
 }
-| x=located(constructor) LT tys=separated_list(COMMA, located(ty)) GT
+| x=located(constructor) LT tys=separated_list(COMMA, located(ty)) GT %prec CONSTR
 {
   Tagged (x, Some tys, [])
+}
+| x=located(constructor) LPAREN es=separated_nonempty_list(COMMA, located(expr)) RPAREN
+{
+  Tagged (x, None, es)
 }
 | x=located(constructor) LT tys=separated_list(COMMA, located(ty)) GT LPAREN es=separated_nonempty_list(COMMA, located(expr)) RPAREN
 {
@@ -396,23 +401,23 @@ expr1:
 {
   e
 }
-| BACKSLASH p=located(pattern) ARROW e=located(expr1)
-{
-  Fun (FunctionDefinition (p, e))
-}
-| v=vdefinition SEMICOLON e=located(expr)
-{
-  Define (v,e)
-}
 
 expr:
 | e=expr1
 {
   e
 }
-| e1=located(expr) SEMICOLON e2=located(expr)
+| e1=located(expr1) SEMICOLON e2=located(expr)
 {
   Sequence [e1; e2]
+}
+| v=vdefinition(expr1) SEMICOLON e=located(expr)
+{
+  Define (v,e)
+}
+| BACKSLASH p=located(pattern) ARROW e=located(expr)
+{
+  Fun (FunctionDefinition (p, e))
 }
 
 branch:
