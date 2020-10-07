@@ -61,7 +61,7 @@ let blank   = [' ' '\009' '\012']
 let digit = ['0'-'9']
 let number_dec = "-"? ['0'-'9']+
 let number_hexa = "0x" ['0'-'9' 'a'-'f' 'A'-'F']+
-let number_bin = "Ob" ['0'-'1']+
+let number_bin = "0b" ['0'-'1']+
 let number_oct = "0o" ['0'-'7']+
 
 
@@ -83,11 +83,22 @@ let atom = "\\" ['0'-'9'] ['0'-'9'] ['0'-'9']
   | "\\b"
   | "\\r"
 
-rule token = parse
+rule comment = parse
+  | newline      { next_line_and comment lexbuf }
+  | eof
+  { Error.error "during lexing" (Position.cpos lexbuf) "Unterminated comment." }
+  | "*/"         { () }
+  | "/*"         { comment lexbuf; comment lexbuf }
+  | _            { comment lexbuf }
+
+and token = parse
   (** Layout *)
   | newline         { next_line_and token lexbuf }
   | blank+          { token lexbuf               }
   | eof             { EOF       }
+
+  | "//" [^ '\010' '\013']* newline   { next_line_and token lexbuf }
+  | "/*"                              { comment lexbuf; token lexbuf }
 
   (** Keywords *)
   | "fun"     { FUN     }
