@@ -201,7 +201,7 @@ literal:
 }
 
 record_elem_expr:
-| l=located(label) EQUAL e=located(expr)
+| l=located(label) EQUAL e=located(expr1)
 {
   (l, e)
 }
@@ -401,6 +401,10 @@ expr1:
 {
   e
 }
+| BACKSLASH p=located(pattern) ARROW e=located(expr1)
+{
+  Fun (FunctionDefinition (p, e))
+}
 
 expr:
 | e=expr1
@@ -414,10 +418,6 @@ expr:
 | v=vdefinition(expr1) SEMICOLON e=located(expr)
 {
   Define (v,e)
-}
-| BACKSLASH p=located(pattern) ARROW e=located(expr)
-{
-  Fun (FunctionDefinition (p, e))
 }
 
 branch:
