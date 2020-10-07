@@ -1,5 +1,5 @@
 FLAP?=../_build/default/src/flap.exe
-JALONS=01-Parsing.results
+JALONS=01-Parsing.results 02-Interpreter.results
 EXTS=hopix hobix fopix retrolix
 
 .PHONY: all clean test FAKE
@@ -44,4 +44,8 @@ all.results: $(JALONS)
 
 %.output: %.hopix $(FLAP)
 	@$(FLAP) -s hopix --verbose true --dry true --unsafe true \
+		$< >$@ 2>&1; exit 0
+
+%.output: %.eval.hopix $(FLAP)
+	@$(FLAP) -s hopix --run true --dry true --unsafe true --sexp-in true \
 		$< >$@ 2>&1; exit 0
