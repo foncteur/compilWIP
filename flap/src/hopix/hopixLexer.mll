@@ -117,8 +117,9 @@ and token = parse
   | "do"      { DO      }
 
   (** Identifiers *)
-  | lower_identifier as s   { IDLOW s }
-  | upper_identifier as s   { IDUP s  }
+  | lower_identifier as s       { IDLOW s }
+  | ("`" lower_identifier) as s { IDQUOTE s }
+  | upper_identifier as s       { IDUP s  }
 
   (** Integers *)
   | number_dec as s     { INT s }
@@ -179,7 +180,6 @@ and token = parse
 
 
   | "_"   { UNDERSCORE  }
-  | "`"   { QUOTE       }
   | ":"   { COLON       }
   | ";"   { SEMICOLON   }
   | ","   { COMMA       }
