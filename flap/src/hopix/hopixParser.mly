@@ -273,7 +273,7 @@ expr5:
 }
 | DO LBRACE ebody=located(expr) RBRACE WHILE LPAREN econd=located(expr) RPAREN
 {
-  While (econd, ebody)
+  Sequence [ebody ; Position.with_poss $startpos $endpos (While (econd, ebody))]
 }
 | FOR v=located(identifier) IN LPAREN estart=located(expr) TO estop=located(expr) RPAREN LBRACE ebody=located(expr) RBRACE
 {
