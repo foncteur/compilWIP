@@ -318,8 +318,17 @@ let rec evaluate runtime ast =
                         E, M ⊢ dv ⇒ E', M'
 
 *)
-and definition runtime d =
-failwith "Students! This is your job!"
+and definition runtime d = match (value d) with
+| DefineValue (SimpleValue (name,None,e)) ->
+  let eval = expression' runtime.environment runtime.memory e in
+  let new_env = Environment.bind runtime.environment (value name) eval in
+  {environment = new_env ; memory = runtime.memory}
+| _ -> failwith "Students! This  is your job!"
+
+(* This is a function that interprets a literal *)
+and interpret_literal = function
+| LInt i -> int_as_value i
+| _ -> failwith "not implemented yet"
 
 and expression' environment memory e =
   expression (position e) environment memory (value e)
@@ -330,7 +339,23 @@ and expression' environment memory e =
 
    and E = [runtime.environment], M = [runtime.memory].
 *)
-and expression _ environment memory =
+
+
+and expression _ environment memory = function
+| Literal i -> interpret_literal (value i)
+| Variable (id, None) ->
+  let eval = Environment.lookup (position id) (value id) environment in
+  eval
+| Apply (e1, e2) ->
+  let eval1 = expression' environment memory e1 in
+  let eval2 = expression' environment memory e2 in
+  (
+    match eval1 with
+    | VPrimitive (s,f) -> f memory eval2
+    | _ -> failwith "not implemented yet"
+  )
+
+| _ ->
 failwith "Students! This is your job!"
 
 (** This function returns the difference between two runtimes. *)
