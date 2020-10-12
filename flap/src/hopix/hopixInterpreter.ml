@@ -328,6 +328,8 @@ and definition runtime d = match (value d) with
 (* This is a function that interprets a literal *)
 and interpret_literal = function
 | LInt i -> int_as_value i
+| LChar c -> VChar c 
+| LString s -> VString s
 | _ -> failwith "not implemented yet"
 
 and expression' environment memory e =
@@ -370,6 +372,20 @@ and expression _ environment memory = function
 
           | _ -> failwith "not implemented yet"
       )
+
+  | HopixAST.Sequence exs ->
+      let rec eval_seq = function
+        | []    -> failwith "not implemented yet"
+        | [e]   -> expression' environment memory e 
+        | e::l  -> let _ = expression' environment memory e in 
+            eval_seq l 
+      in 
+      eval_seq exs
+
+  (*| HopixAST.Define (vd, e) ->
+      let actual_runtime = { memory = memory ; environment = environment } in 
+      let new_runtime = definition actual_runtime (HopixAST.DefineValue vd) in 
+      expression' new_runtime.environment new_runtime.memory e*)
  
   | HopixAST.Apply (e1, e2) ->
       let eval1 = expression' environment memory e1 in
@@ -378,9 +394,37 @@ and expression _ environment memory = function
         match eval1 with
           | VPrimitive (_, f) -> f memory eval2
 
+          | _ -> failwith "not implemented yet1"
+      )
+
+  | HopixAST.Ref e ->
+      let eval = expression' environment memory e in
+      let loc = Memory.allocate memory (Mint.of_int 1) eval in
+      VLocation loc
+
+  | HopixAST.Read e ->
+      let eval = expression' environment memory e in
+      ( 
+        match eval with 
+          | VLocation loc -> let block = Memory.dereference memory loc in 
+              Memory.read block (Mint.of_int 0)
+          | _ -> failwith "not implemented yet"
+      )
+  
+  | HopixAST.Assign (eref, eval) ->
+      let evalref = expression' environment memory eref in 
+      (
+        match evalref with
+          | VLocation loc -> 
+              let block = Memory.dereference memory loc in 
+              let evalval = expression' environment memory eval in 
+              Memory.write block (Mint.of_int 0) evalval ;
+              VUnit 
+
           | _ -> failwith "not implemented yet"
       )
 
+  
   | _ ->
     failwith "Students! This is your job!"
 
