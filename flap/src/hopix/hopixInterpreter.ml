@@ -372,7 +372,7 @@ and expression pos environment memory = function
 
   | HopixAST.Sequence exs ->
       let rec eval_seq = function
-        | []    -> failwith "not implemented yet"
+        | []    -> failwith "error not implemented yet (Sequence - empty list)"
         | [e]   -> expression' environment memory e 
         | e::l  -> let _ = expression' environment memory e in 
             eval_seq l 
@@ -422,6 +422,22 @@ and expression pos environment memory = function
           | None -> failwith "error not implemented yet (Assign - evalref is not a VLocation)"
       )
 
+  | HopixAST.Case (e, b) ->
+      let eval = expression' environment memory e in 
+      let rec findPattern = function 
+        | [] -> failwith "error not implemented yet (Case - no pattern matches"
+        | b_loc::bs -> let b = value b_loc in 
+            ( 
+              match b with Branch (p, exprToExec) ->
+                let (patternFound, new_env) = pattern environment eval (value p) in  
+                if patternFound then 
+                  expression' new_env memory exprToExec
+                else 
+                  findPattern bs
+            )
+      in findPattern b 
+
+
   | HopixAST.IfThenElse (econd, etrue, efalse) ->
       let evalcond = expression' environment memory econd in
       (
@@ -464,8 +480,89 @@ and expression pos environment memory = function
 
   | HopixAST.TypeAnnotation (e, _) -> expression' environment memory e 
 
-  | _ ->
-    failwith "Students! This is your job!"
+and analyse_patterns_tagged environment vs ps =
+    match (vs, ps) with 
+      | ([], []) -> (true, environment)
+      | (v::vs, p::ps) -> 
+          let (patternOk, new_env) = pattern environment v (value p) in
+          (
+            if patternOk then
+              analyse_patterns_tagged new_env vs ps 
+            else 
+              (false, environment)
+          )
+      | _ -> failwith "error not implemented yet (analyse_patters_rec)"
+
+and analyse_patterns_rec environment vrec prec = 
+    match (vrec, prec) with 
+      | ([], []) -> (true, environment)
+      | ( (vl, vval)::vrec, (pl, p)::prec ) ->
+          if vl = value pl then (
+            let (patternOk, new_env) = pattern environment vval (value p) in 
+            if patternOk then 
+              analyse_patterns_rec new_env vrec prec
+            else 
+              (false, environment)
+          ) else 
+            (false, environment)
+      | _ -> failwith "error not implemented yet (analyse_patterns_rec)"
+
+and analyse_patterns_and environment v = function 
+    | [] -> (true, environment)
+    | p::ps -> let (patternOk, new_env) = pattern environment v (value p) in 
+          if patternOk then 
+            analyse_patterns_and new_env v ps
+          else 
+            (false, environment)
+
+and pattern environment v = function
+  | PVariable id ->
+      let new_env = Environment.bind environment (value id) v in
+      (true, new_env)
+
+  | PWildcard -> (true, environment)
+
+  | PTypeAnnotation (p, _) -> pattern environment v (value p)
+
+  | PLiteral l ->
+      ( 
+        match (value l) with 
+          | LInt i -> (Some i = value_as_int v, environment)
+          | LChar c -> (Some c = value_as_char v, environment)
+          | LString s -> (Some s = value_as_string v, environment)
+      )
+
+  | PTaggedValue (k, _, ps) ->
+      (
+        match (value_as_tagged v) with
+          | Some (k_v, exs_v) ->
+              if k_v = (value k) then 
+                analyse_patterns_tagged environment exs_v ps
+              else 
+                (false, environment)
+          | None -> failwith "error not implemented yet (PTaggedValue - v is not a VTagged)"
+      )
+
+  | PRecord (prec, _) ->
+      (
+        match (value_as_record v) with 
+          | Some vrec -> analyse_patterns_rec environment vrec prec
+          | None -> failwith "error not implemented yet (PRecord - v is not a VRecord)"
+      )
+
+  | PTuple ps -> 
+      (
+        match v with 
+          | VTuple vs -> analyse_patterns_tagged environment vs ps
+          | _ -> failwith "error not implemented yet (PTuple - v is not a VTuple)"
+      )
+
+  | POr ps -> 
+      let patternOk = List.exists (function p -> fst (pattern environment v (value p))) ps in
+      (patternOk, environment)
+
+  | PAnd ps -> analyse_patterns_and environment v ps
+  
 
 (** This function returns the difference between two runtimes. *)
 and extract_observable runtime runtime' =
