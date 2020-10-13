@@ -515,6 +515,14 @@ and analyse_patterns_and environment v = function
           else 
             (false, environment)
 
+and analyse_patterns_or environment v = function
+    | [] -> (false, environment)
+    | p::ps -> let (patternOk, new_env) = pattern environment v (value p) in 
+          if patternOk then 
+            (true, new_env)
+          else 
+            analyse_patterns_or environment v ps
+
 and pattern environment v = function
   | PVariable id ->
       let new_env = Environment.bind environment (value id) v in
@@ -557,9 +565,7 @@ and pattern environment v = function
           | _ -> failwith "error not implemented yet (PTuple - v is not a VTuple)"
       )
 
-  | POr ps -> 
-      let patternOk = List.exists (function p -> fst (pattern environment v (value p))) ps in
-      (patternOk, environment)
+  | POr ps -> analyse_patterns_or environment v ps
 
   | PAnd ps -> analyse_patterns_and environment v ps
   
