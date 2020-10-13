@@ -330,7 +330,6 @@ and interpret_literal = function
 | LInt i -> int_as_value i
 | LChar c -> VChar c 
 | LString s -> VString s
-| _ -> failwith "not implemented yet"
 
 and expression' environment memory e =
   expression (position e) environment memory (value e)
@@ -342,11 +341,11 @@ and expression' environment memory e =
    and E = [runtime.environment], M = [runtime.memory].
 *)
 
-and expression _ environment memory = function
+and expression pos environment memory = function
   | HopixAST.Literal i ->
       interpret_literal (value i)
 
-  | HopixAST.Variable (id, None) ->
+  | HopixAST.Variable (id, _) ->
       let eval = Environment.lookup (position id) (value id) environment in
       eval
 
@@ -366,11 +365,9 @@ and expression _ environment memory = function
   | HopixAST.Field (e, l) ->
       let eval_e = expression' environment memory e in
       (
-        match eval_e with 
-          | VRecord r -> List.find (function (lab, _) -> lab = (value l)) r 
-                |> snd 
-
-          | _ -> failwith "not implemented yet"
+        match (value_as_record eval_e) with 
+         | Some r -> List.find (function (label, _) -> label = (value l)) r |> snd
+         | None -> failwith "error not implemented yet (Field - eval_e is not a VRecord)"
       )
 
   | HopixAST.Sequence exs ->
@@ -382,11 +379,14 @@ and expression _ environment memory = function
       in 
       eval_seq exs
 
-  (*| HopixAST.Define (vd, e) ->
+  | HopixAST.Define (vd, e) ->
       let actual_runtime = { memory = memory ; environment = environment } in 
-      let new_runtime = definition actual_runtime (HopixAST.DefineValue vd) in 
-      expression' new_runtime.environment new_runtime.memory e*)
- 
+      let new_runtime = definition actual_runtime (Position.with_pos pos (HopixAST.DefineValue vd)) in 
+      expression' new_runtime.environment new_runtime.memory e
+
+  | HopixAST.Fun (FunctionDefinition (p, f)) -> 
+      VClosure (environment, p, f)
+
   | HopixAST.Apply (e1, e2) ->
       let eval1 = expression' environment memory e1 in
       let eval2 = expression' environment memory e2 in
@@ -404,27 +404,66 @@ and expression _ environment memory = function
 
   | HopixAST.Read e ->
       let eval = expression' environment memory e in
-      ( 
-        match eval with 
-          | VLocation loc -> let block = Memory.dereference memory loc in 
+      (
+        match (value_as_location eval) with 
+          | Some loc -> let block = Memory.dereference memory loc in 
               Memory.read block (Mint.of_int 0)
-          | _ -> failwith "not implemented yet"
+          | None -> failwith "error not implemented yet (Read - eval is not a VLocation)"
       )
-  
+
   | HopixAST.Assign (eref, eval) ->
       let evalref = expression' environment memory eref in 
       (
-        match evalref with
-          | VLocation loc -> 
-              let block = Memory.dereference memory loc in 
+        match (value_as_location evalref) with 
+          | Some loc -> let block = Memory.dereference memory loc in 
               let evalval = expression' environment memory eval in 
-              Memory.write block (Mint.of_int 0) evalval ;
-              VUnit 
-
-          | _ -> failwith "not implemented yet"
+              Memory.write block (Mint.of_int 0) evalval;
+              VUnit
+          | None -> failwith "error not implemented yet (Assign - evalref is not a VLocation)"
       )
 
-  
+  | HopixAST.IfThenElse (econd, etrue, efalse) ->
+      let evalcond = expression' environment memory econd in
+      (
+        try (
+          if (value_as_bool evalcond) then 
+            expression' environment memory etrue
+          else 
+            expression' environment memory efalse
+        ) with 
+          | _ -> failwith "error not implemented yet (IfThenElse - evalcond is not a bool"
+      )
+      
+  | HopixAST.While (econd, ebody) ->
+      let evalcond = ref (expression' environment memory econd) in
+      (
+        try (
+          while (value_as_bool !evalcond) do 
+            let _ = expression' environment memory ebody in
+            evalcond := expression' environment memory econd
+          done;
+          VUnit
+        ) with 
+            | _ -> failwith "error not implemented yet (While - evalcond is not a bool"
+      )
+
+  | HopixAST.For (id, estart, estop, ebody) ->
+      let evalstart = expression' environment memory estart in 
+      let evalstop = expression' environment memory estop in 
+      (
+        match (value_as_int evalstart, value_as_int evalstop) with 
+            | (Some nstart, Some nstop) ->
+                for x = (Mint.to_int nstart) to (Mint.to_int nstop) do 
+                  let new_env = Environment.bind environment (value id) (VInt (Mint.of_int x)) in 
+                  let _ = expression' new_env memory ebody in 
+                  ()
+                done;
+                VUnit
+            | _ -> failwith "error not implemented yet (For - evalstart or evalstop is not a int"
+      )
+
+  | HopixAST.TypeAnnotation (e, _) -> expression' environment memory e 
+
   | _ ->
     failwith "Students! This is your job!"
 
