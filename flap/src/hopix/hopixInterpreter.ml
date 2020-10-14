@@ -322,7 +322,8 @@ and def_funList environment = function
   | [] -> environment
   | (name, _, HopixAST.FunctionDefinition (m, e))::fun_list ->
     let fun_def = VClosure (environment, m, e) in 
-    let new_env = Environment.bind environment (value name) fun_def in 
+    let new_env = Environment.bind environment (value name) fun_def in
+    Environment.update (position name) (value name) new_env (VClosure (new_env, m, e));
     def_funList new_env fun_list
 
 and definition runtime d = match (value d) with
@@ -400,14 +401,20 @@ and expression pos environment memory = function
   | HopixAST.Fun (FunctionDefinition (p, f)) -> 
       VClosure (environment, p, f)
 
-  | HopixAST.Apply (e1, e2) ->
-      let eval1 = expression' environment memory e1 in
-      let eval2 = expression' environment memory e2 in
+  | HopixAST.Apply (efun, earg) ->
+      let eval_fun = expression' environment memory efun in
+      let eval_arg = expression' environment memory earg in
       (
-        match eval1 with
-          | VPrimitive (_, f) -> f memory eval2
+        match eval_fun with
+          | VPrimitive (_, f) -> f memory eval_arg
+          | VClosure (env_f, p, f) -> 
+              let (patternOk, new_env) = pattern env_f eval_arg (value p) in 
+              if patternOk then 
+                expression' new_env memory f 
+              else 
+                failwith "error not implemented yet (Apply - eval2 doesn't match with eval1 pattern)"
 
-          | _ -> failwith "not implemented yet1"
+          | _ -> failwith "error not implemented yet (Apply - eval1 doesn't recognized)"
       )
 
   | HopixAST.Ref e ->
@@ -561,21 +568,21 @@ and pattern environment v = function
                 analyse_patterns_tagged environment exs_v ps
               else 
                 (false, environment)
-          | None -> failwith "error not implemented yet (PTaggedValue - v is not a VTagged)"
+          | None -> (false, environment)
       )
 
   | PRecord (prec, _) ->
       (
         match (value_as_record v) with 
           | Some vrec -> analyse_patterns_rec environment vrec prec
-          | None -> failwith "error not implemented yet (PRecord - v is not a VRecord)"
+          | None -> (false, environment)
       )
 
   | PTuple ps -> 
       (
         match v with 
           | VTuple vs -> analyse_patterns_tagged environment vs ps
-          | _ -> failwith "error not implemented yet (PTuple - v is not a VTuple)"
+          | _ -> (false, environment)
       )
 
   | POr ps -> analyse_patterns_or environment v ps
