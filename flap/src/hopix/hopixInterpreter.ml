@@ -318,13 +318,26 @@ let rec evaluate runtime ast =
                         E, M ⊢ dv ⇒ E', M'
 
 *)
-and definition runtime d = match (value d) with
-| DefineValue (SimpleValue (name, _, e)) ->
-  let eval = expression' runtime.environment runtime.memory e in
-  let new_env = Environment.bind runtime.environment (value name) eval in
-  {environment = new_env ; memory = runtime.memory}
-| _ -> failwith "Students! This  is your job!"
+and def_funList environment = function 
+  | [] -> environment
+  | (name, _, HopixAST.FunctionDefinition (m, e))::fun_list ->
+    let fun_def = VClosure (environment, m, e) in 
+    let new_env = Environment.bind environment (value name) fun_def in 
+    def_funList new_env fun_list
 
+and definition runtime d = match (value d) with
+  | HopixAST.DefineType _      -> runtime
+  | HopixAST.DeclareExtern _   -> runtime
+
+  | HopixAST.DefineValue (HopixAST.SimpleValue (name, _, e)) ->
+    let eval = expression' runtime.environment runtime.memory e in
+    let new_env = Environment.bind runtime.environment (value name) eval in
+    {environment = new_env ; memory = runtime.memory}
+
+  | HopixAST.DefineValue (HopixAST.RecFunctions fun_list) ->
+    let new_env = def_funList runtime.environment fun_list in 
+    { environment = new_env ; memory = runtime.memory }
+    
 (* This is a function that interprets a literal *)
 and interpret_literal = function
 | LInt i -> int_as_value i
