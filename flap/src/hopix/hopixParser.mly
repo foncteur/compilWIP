@@ -437,13 +437,15 @@ branch:
   Branch (p, e)
 }
 
+(* record_elem_pattern sert à parser les briques élémentaires de pattern d'un record *)
 record_elem_pattern:
 | l=located(label) EQUAL p=located(pattern)
 {
   (l, p)
 }
 
-pattern1:
+(* patternNonAmbiguous gère tout les cas de pattern ayant des structures non ambigues *)
+patternNonAmbiguous:
 | id=located(identifier)
 {
   PVariable id
@@ -489,20 +491,21 @@ pattern1:
   PRecord (l, Some tys)
 }
 
+(* pattern gère les cas de pattern ambigues *)
 pattern:
-| p=located(pattern1) COLON t=located(tyTuples)
+| p=located(patternNonAmbiguous) COLON t=located(tyTuples)
 {
   PTypeAnnotation (p, t)
 }
-| p1=located(pattern1) BAR p2=separated_nonempty_list(BAR, located(pattern1))
+| p1=located(patternNonAmbiguous) BAR p2=separated_nonempty_list(BAR, located(pattern1))
 {
   POr (p1 :: p2)
 }
-| p1=located(pattern1) AMPERSAND p2=separated_nonempty_list(AMPERSAND, located(pattern1))
+| p1=located(patternNonAmbiguous) AMPERSAND p2=separated_nonempty_list(AMPERSAND, located(pattern1))
 {
   PAnd (p1 :: p2)
 }
-| p=pattern1
+| p=patternNonAmbiguous
 {
   p
 }
