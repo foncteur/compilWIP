@@ -206,6 +206,8 @@ record_elem_expr:
   (l, e)
 }
 
+(* expr5 gère tout les cas d'expressions délimitées sans ambiguïté *)
+
 expr5:
 | LPAREN e=expr RPAREN
 {
@@ -280,6 +282,7 @@ expr5:
   For (v, estart, estop, ebody)
 }
 
+(* expr4 gère le cas des références du point de vue de leur définition (ref e) ou de leur lecture (!e) *)
 expr4:
 | e=expr5
 {
@@ -294,6 +297,7 @@ expr4:
   Read e
 }
 
+(* expr3 gère le cas d'applications de fonctions *)
 expr3:
 | e=expr4
 {
@@ -304,26 +308,23 @@ expr3:
   Apply (e1, e2)
 }
 
-expr2c:
+(* expr2b gère le cas d'expressions ayant un opérateur binaire * ou / *)
+expr2b:
 | e=expr3
 {
   e
 }
-
-expr2b:
-| e=expr2c
-{
-  e
-}
-| e1=located(expr2b) p=located(STAR) e2=located(expr2c)
+| e1=located(expr2b) p=located(STAR) e2=located(expr3)
 {
   mkbinop e1 p e2 "*"
 }
-| e1=located(expr2b) p=located(DIVIDE) e2=located(expr2c)
+| e1=located(expr2b) p=located(DIVIDE) e2=located(expr3)
 {
   mkbinop e1 p e2 "/"
 }
 
+(* expr2a gère le cas des expressions ayant un opérateur binaire - ou + qui sont tout les deux moins prioritaire
+devant la multiplication ou la division, on les places donc en premier *)
 expr2a:
 | e=expr2b
 {
@@ -338,6 +339,8 @@ expr2a:
   mkbinop e1 p e2 "-"
 }
 
+(* expr2ac gère le cas des expressions ayant un opérateur binaire ANDOP.
+Comme ANDOP est plus prioritaire que OROP, on le met en second *)
 expr2ac:
 | e=expr2a
 {
@@ -348,6 +351,8 @@ expr2ac:
   mkbinop e1 p e2 "&&"
 }
 
+(* expr2ab gère le cas des expressions ayant un opérateur binaire OROP.
+Attention : l'opérateur binaire OROP est moins prioritaire que ANDOP, on le met alors en premier *)
 expr2ab:
 | e=expr2ac
 {
@@ -358,7 +363,7 @@ expr2ab:
   mkbinop e1 p e2 "||"
 }
 
-
+(* expr2aa gère le cas des expressions ayant un opérateur binaire de comparaison *)
 expr2aa:
 | e=expr2ab
 {
@@ -385,7 +390,7 @@ expr2aa:
   mkbinop e1 p e2 ">?"
 }
 
-
+(* expr2 sert à gérer le cas de l'assignation d'une valeur à une référence *)
 expr2:
 | e=expr2aa
 {
@@ -396,6 +401,7 @@ expr2:
   Assign (e1, e2)
 }
 
+(* expr1 sert à gérer le cas des fonctions anonymes *)
 expr1:
 | e=expr2
 {
@@ -406,6 +412,8 @@ expr1:
   Fun (FunctionDefinition (p, e))
 }
 
+(* expr sert à gérer le cas de la séparation des séquences d'expressions 
+ou d'une définition locale suivit d'expressions *)
 expr:
 | e=expr1
 {
