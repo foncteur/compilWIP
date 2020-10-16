@@ -3,10 +3,20 @@
   open HopixAST
   open Position
 
+  (* La fonction mkbinop e1 p e2 name sert à écrire l'AST pour que si name est la chaine string pour un opérateur op alors 
+    l'AST est de la forme Apply ( Apply(op, e1), e2 ) *)
+
   let mkbinop e1 p e2 name =
     let pos = Position.position p in
     let pos2 = Position.join (Position.position e1) pos in
-    Apply(Position.with_pos pos2 (Apply (Position.with_pos pos (Variable (Position.with_pos pos (Id ("`" ^ name ^ "`")), None)), e1)), e2)
+    Apply (
+      Position.with_pos pos2 (Apply (
+        Position.with_pos pos (
+          Variable (Position.with_pos pos (Id ("`" ^ name ^ "`")), None)
+        ), 
+        e1)), 
+      e2
+    )
 
 %}
 

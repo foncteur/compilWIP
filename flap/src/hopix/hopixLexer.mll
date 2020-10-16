@@ -84,12 +84,11 @@ let atom = "\\" ['0'-'9'] ['0'-'9'] ['0'-'9']
   | "\\r"
 
 rule comment = parse
-  | newline      { next_line_and comment lexbuf }
-  | eof
-  { Error.error "during lexing" (Position.cpos lexbuf) "Unterminated comment." }
-  | "*/"         { () }
-  | "/*"         { comment lexbuf; comment lexbuf }
-  | _            { comment lexbuf }
+  | newline       { next_line_and comment lexbuf }
+  | eof           { Error.error "during lexing" (Position.cpos lexbuf) "Unterminated comment." }
+  | "*/"          { () }
+  | "/*"          { comment lexbuf; comment lexbuf }
+  | _             { comment lexbuf }
 
 and token = parse
   (** Layout *)
@@ -178,7 +177,7 @@ and token = parse
   | "<"   { LT          }
   | ">"   { GT          }
 
-
+  (** Special characters *)
   | "_"   { UNDERSCORE  }
   | ":"   { COLON       }
   | ";"   { SEMICOLON   }

@@ -388,12 +388,12 @@ and expression pos environment memory = function
       (
         match (value_as_record eval_e) with 
          | Some r -> List.find (function (label, _) -> label = (value l)) r |> snd
-         | None -> failwith "error not implemented yet (Field - eval_e is not a VRecord)"
+         | None -> error [pos] "Field - eval_e is not a VRecord"
       )
 
   | HopixAST.Sequence exs ->
       let rec eval_seq = function
-        | []    -> failwith "error not implemented yet (Sequence - empty list)"
+        | []    -> error [pos] "Sequence - empty list"
         | [e]   -> expression' environment memory e 
         | e::l  -> let _ = expression' environment memory e in 
             eval_seq l 
@@ -419,9 +419,9 @@ and expression pos environment memory = function
               if patternOk then 
                 expression' new_env memory f 
               else 
-                failwith "error not implemented yet (Apply - eval2 doesn't match with eval1 pattern)"
+                error [pos] "Apply - eval2 doesn't match with eval1 pattern"
 
-          | _ -> failwith "error not implemented yet (Apply - eval1 doesn't recognized)"
+          | _ -> error [pos] "Apply - eval1 doesn't recognized"
       )
 
   | HopixAST.Ref e ->
@@ -435,7 +435,7 @@ and expression pos environment memory = function
         match (value_as_location eval) with 
           | Some loc -> let block = Memory.dereference memory loc in 
               Memory.read block (Mint.of_int 0)
-          | None -> failwith "error not implemented yet (Read - eval is not a VLocation)"
+          | None -> error [pos] "Read - eval is not a VLocation"
       )
 
   | HopixAST.Assign (eref, eval) ->
@@ -446,13 +446,13 @@ and expression pos environment memory = function
               let evalval = expression' environment memory eval in 
               Memory.write block (Mint.of_int 0) evalval;
               VUnit
-          | None -> failwith "error not implemented yet (Assign - evalref is not a VLocation)"
+          | None -> error [pos] "Assign - evalref is not a VLocation"
       )
 
   | HopixAST.Case (e, b) ->
       let eval = expression' environment memory e in 
       let rec findPattern = function 
-        | [] -> failwith "error not implemented yet (Case - no pattern matches"
+        | [] -> error [pos] "Case - no pattern matches"
         | b_loc::bs -> let b = value b_loc in 
             ( 
               match b with Branch (p, exprToExec) ->
@@ -474,7 +474,7 @@ and expression pos environment memory = function
           else 
             expression' environment memory efalse
         ) with 
-          | _ -> failwith "error not implemented yet (IfThenElse - evalcond is not a bool"
+          | _ -> error [pos] "IfThenElse - evalcond is not a bool"
       )
       
   | HopixAST.While (econd, ebody) ->
@@ -487,7 +487,7 @@ and expression pos environment memory = function
           done;
           VUnit
         ) with 
-            | _ -> failwith "error not implemented yet (While - evalcond is not a bool"
+            | _ -> error [pos] "While - evalcond is not a bool"
       )
 
   | HopixAST.For (id, estart, estop, ebody) ->
@@ -502,7 +502,7 @@ and expression pos environment memory = function
                   ()
                 done;
                 VUnit
-            | _ -> failwith "error not implemented yet (For - evalstart or evalstop is not a int"
+            | _ -> error [pos] "For - evalstart or evalstop is not a int"
       )
 
   | HopixAST.TypeAnnotation (e, _) -> expression' environment memory e 
@@ -518,7 +518,7 @@ and analyse_patterns_tagged environment vs ps =
             else 
               (false, environment)
           )
-      | _ -> failwith "error not implemented yet (analyse_patters_rec)"
+      | _ -> error [] "analyse_patterns_tagged"
 
 and analyse_patterns_rec environment vrec prec = 
     match (vrec, prec) with 
@@ -532,7 +532,7 @@ and analyse_patterns_rec environment vrec prec =
               (false, environment)
           ) else 
             (false, environment)
-      | _ -> failwith "error not implemented yet (analyse_patterns_rec)"
+      | _ -> error [] "analyse_patterns_rec"
 
 and analyse_patterns_and environment v = function 
     | [] -> (true, environment)
