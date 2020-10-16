@@ -497,11 +497,11 @@ pattern:
 {
   PTypeAnnotation (p, t)
 }
-| p1=located(patternNonAmbiguous) BAR p2=separated_nonempty_list(BAR, located(pattern1))
+| p1=located(patternNonAmbiguous) BAR p2=separated_nonempty_list(BAR, located(patternNonAmbiguous))
 {
   POr (p1 :: p2)
 }
-| p1=located(patternNonAmbiguous) AMPERSAND p2=separated_nonempty_list(AMPERSAND, located(pattern1))
+| p1=located(patternNonAmbiguous) AMPERSAND p2=separated_nonempty_list(AMPERSAND, located(patternNonAmbiguous))
 {
   PAnd (p1 :: p2)
 }
