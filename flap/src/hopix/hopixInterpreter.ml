@@ -326,6 +326,12 @@ and def_funList environment = function
     Environment.update (position name) (value name) new_env (VClosure (new_env, m, e));
     def_funList new_env fun_list
 
+and funList_update_env environment = function 
+  | [] -> ()
+  | (name, _, HopixAST.FunctionDefinition (m, e))::fun_list ->
+    Environment.update (position name) (value name) environment (VClosure (environment, m, e));
+    funList_update_env environment fun_list
+
 and definition runtime d = match (value d) with
   | HopixAST.DefineType _      -> runtime
   | HopixAST.DeclareExtern _   -> runtime
@@ -337,6 +343,7 @@ and definition runtime d = match (value d) with
 
   | HopixAST.DefineValue (HopixAST.RecFunctions fun_list) ->
     let new_env = def_funList runtime.environment fun_list in 
+    funList_update_env new_env fun_list;
     { environment = new_env ; memory = runtime.memory }
     
 (* This is a function that interprets a literal *)
