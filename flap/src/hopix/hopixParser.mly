@@ -201,14 +201,13 @@ literal:
 }
 
 record_elem_expr:
-| l=located(label) EQUAL e=located(expr1)
+| l=located(label) EQUAL e=located(exprAnonymFun)
 {
   (l, e)
 }
 
-(* expr5 gère tout les cas d'expressions délimitées sans ambiguïté *)
-
-expr5:
+(* exprNonAmbiguous gère tout les cas d'expressions délimitées sans ambiguïté *)
+exprNonAmbiguous:
 | LPAREN e=expr RPAREN
 {
   e
@@ -257,7 +256,7 @@ expr5:
 {
   TypeAnnotation (e, t)
 }
-| e=located(expr5) DOT v=located(label)
+| e=located(exprNonAmbiguous) DOT v=located(label)
 {
   Field (e, v)
 }
@@ -282,132 +281,132 @@ expr5:
   For (v, estart, estop, ebody)
 }
 
-(* expr4 gère le cas des références du point de vue de leur définition (ref e) ou de leur lecture (!e) *)
-expr4:
-| e=expr5
+(* exprRefRead gère le cas des références du point de vue de leur définition (ref e) ou de leur lecture (!e) *)
+exprRefRead:
+| e=exprNonAmbiguous
 {
   e
 }
-| REF e=located(expr4)
+| REF e=located(exprRefRead)
 {
   Ref e
 }
-| READ e=located(expr4)
+| READ e=located(exprRefRead)
 {
   Read e
 }
 
-(* expr3 gère le cas d'applications de fonctions *)
-expr3:
-| e=expr4
+(* exprApplyFun gère le cas d'applications de fonctions *)
+exprApplyFun:
+| e=exprRefRead
 {
   e
 }
-| e1=located(expr3) e2=located(expr4)
+| e1=located(exprApplyFun) e2=located(exprRefRead)
 {
   Apply (e1, e2)
 }
 
-(* expr2b gère le cas d'expressions ayant un opérateur binaire * ou / *)
-expr2b:
-| e=expr3
+(* exprStarDivideOps gère le cas d'expressions ayant un opérateur binaire * ou / *)
+exprStarDivideOps:
+| e=exprApplyFun
 {
   e
 }
-| e1=located(expr2b) p=located(STAR) e2=located(expr3)
+| e1=located(exprStarDivideOps) p=located(STAR) e2=located(exprApplyFun)
 {
   mkbinop e1 p e2 "*"
 }
-| e1=located(expr2b) p=located(DIVIDE) e2=located(expr3)
+| e1=located(exprStarDivideOps) p=located(DIVIDE) e2=located(exprApplyFun)
 {
   mkbinop e1 p e2 "/"
 }
 
-(* expr2a gère le cas des expressions ayant un opérateur binaire - ou + qui sont tout les deux moins prioritaire
+(* exprPlusMinusOps gère le cas des expressions ayant un opérateur binaire - ou + qui sont tout les deux moins prioritaire
 devant la multiplication ou la division, on les places donc en premier *)
-expr2a:
-| e=expr2b
+exprPlusMinusOps:
+| e=exprStarDivideOps
 {
   e
 }
-| e1=located(expr2a) p=located(PLUS) e2=located(expr2b)
+| e1=located(exprPlusMinusOps) p=located(PLUS) e2=located(exprStarDivideOps)
 {
   mkbinop e1 p e2 "+"
 }
-| e1=located(expr2a) p=located(MINUS) e2=located(expr2b)
+| e1=located(exprPlusMinusOps) p=located(MINUS) e2=located(exprStarDivideOps)
 {
   mkbinop e1 p e2 "-"
 }
 
-(* expr2ac gère le cas des expressions ayant un opérateur binaire ANDOP.
+(* exprAndOp gère le cas des expressions ayant un opérateur binaire ANDOP.
 Comme ANDOP est plus prioritaire que OROP, on le met en second *)
-expr2ac:
-| e=expr2a
+exprAndOp:
+| e=exprPlusMinusOps
 {
   e
 }
-| e1=located(expr2ac) p=located(ANDOP) e2=located(expr2a)
+| e1=located(exprAndOp) p=located(ANDOP) e2=located(exprPlusMinusOps)
 {
   mkbinop e1 p e2 "&&"
 }
 
-(* expr2ab gère le cas des expressions ayant un opérateur binaire OROP.
+(* exprOrOp gère le cas des expressions ayant un opérateur binaire OROP.
 Attention : l'opérateur binaire OROP est moins prioritaire que ANDOP, on le met alors en premier *)
-expr2ab:
-| e=expr2ac
+exprOrOp:
+| e=exprAndOp
 {
   e
 }
-| e1=located(expr2ab) p=located(OROP) e2=located(expr2ac)
+| e1=located(exprOrOp) p=located(OROP) e2=located(exprAndOp)
 {
   mkbinop e1 p e2 "||"
 }
 
-(* expr2aa gère le cas des expressions ayant un opérateur binaire de comparaison *)
-expr2aa:
-| e=expr2ab
+(* exprCompBinOp gère le cas des expressions ayant un opérateur binaire de comparaison *)
+exprCompBinOp:
+| e=exprOrOp
 {
   e
 }
-| e1=located(expr2ab) p=located(ISEQUAL) e2=located(expr2ab)
+| e1=located(exprOrOp) p=located(ISEQUAL) e2=located(exprPlusMinusOps)
 {
   mkbinop e1 p e2 "=?"
 }
-| e1=located(expr2ab) p=located(ISLEQ) e2=located(expr2ab)
+| e1=located(exprOrOp) p=located(ISLEQ) e2=located(exprPlusMinusOps)
 {
   mkbinop e1 p e2 "<=?"
 }
-| e1=located(expr2ab) p=located(ISGEQ) e2=located(expr2ab)
+| e1=located(exprOrOp) p=located(ISGEQ) e2=located(exprPlusMinusOps)
 {
   mkbinop e1 p e2 ">=?"
 }
-| e1=located(expr2ab) p=located(ISLT) e2=located(expr2ab)
+| e1=located(exprOrOp) p=located(ISLT) e2=located(exprPlusMinusOps)
 {
   mkbinop e1 p e2 "<?"
 }
-| e1=located(expr2ab) p=located(ISGT) e2=located(expr2ab)
+| e1=located(exprOrOp) p=located(ISGT) e2=located(exprPlusMinusOps)
 {
   mkbinop e1 p e2 ">?"
 }
 
-(* expr2 sert à gérer le cas de l'assignation d'une valeur à une référence *)
-expr2:
-| e=expr2aa
+(* exprAssign sert à gérer le cas de l'assignation d'une valeur à une référence *)
+exprAssign:
+| e=exprCompBinOp
 {
   e
 }
-| e1=located(expr3) ASSIGN e2=located(expr2)
+| e1=located(exprApplyFun) ASSIGN e2=located(exprAssign)
 {
   Assign (e1, e2)
 }
 
-(* expr1 sert à gérer le cas des fonctions anonymes *)
-expr1:
-| e=expr2
+(* exprAnonymFun sert à gérer le cas des fonctions anonymes *)
+exprAnonymFun:
+| e=exprAssign
 {
   e
 }
-| BACKSLASH p=located(pattern) ARROW e=located(expr1)
+| BACKSLASH p=located(pattern) ARROW e=located(exprAnonymFun)
 {
   Fun (FunctionDefinition (p, e))
 }
@@ -415,15 +414,15 @@ expr1:
 (* expr sert à gérer le cas de la séparation des séquences d'expressions 
 ou d'une définition locale suivit d'expressions *)
 expr:
-| e=expr1
+| e=exprAnonymFun
 {
   e
 }
-| e1=located(expr1) SEMICOLON e2=located(expr)
+| e1=located(exprAnonymFun) SEMICOLON e2=located(expr)
 {
   Sequence [e1; e2]
 }
-| v=vdefinition(expr1) SEMICOLON e=located(expr)
+| v=vdefinition(exprAnonymFun) SEMICOLON e=located(expr)
 {
   Define (v,e)
 }
