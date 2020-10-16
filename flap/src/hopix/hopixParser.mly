@@ -136,7 +136,8 @@ type_con:
   TCon x
 }
 
-ty3:
+(* tyNonAmbiguous gère les cas des définitions de types non ambigues *)
+tyNonAmbiguous:
 | t=type_variable
 {
   TyVar t
@@ -154,23 +155,24 @@ ty3:
   t
 }
 
-ty2:
-| t=ty3
+(* tyTuples gère le cas des définitions de types de tuples *)
+tyTuples:
+| t=tyNonAmbiguous
 {
   t
 }
-| t1=located(ty3) STAR l=separated_nonempty_list(STAR, located(ty3))
+| t1=located(tyNonAmbiguous) STAR l=separated_nonempty_list(STAR, located(tyNonAmbiguous))
 {
   TyTuple(t1::l)
 }
 
-
+(* ty gère le cas des définitions de types de fonctions *)
 ty:
-| t=ty2
+| t=tyTuples
 {
   t
 }
-| t1=located(ty2) ARROW t2=located(ty)
+| t1=located(tyTuples) ARROW t2=located(ty)
 {
   TyArrow(t1,t2)
 }
@@ -200,6 +202,8 @@ literal:
   LChar (c)
 }
 
+(* record_elem_expr sert à parser la brique élémentaire des records de la forme l_i = e_i.
+Attention, on n'autorise pas de séquences d'expressions dans ce cas là, on passe donc directement à exprAnonymFun *)
 record_elem_expr:
 | l=located(label) EQUAL e=located(exprAnonymFun)
 {
@@ -486,7 +490,7 @@ pattern1:
 }
 
 pattern:
-| p=located(pattern1) COLON t=located(ty2)
+| p=located(pattern1) COLON t=located(tyTuples)
 {
   PTypeAnnotation (p, t)
 }
