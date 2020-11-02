@@ -236,6 +236,9 @@ let typecheck tenv ast : typing_environment =
       | TyTuple tys -> ATyTuple (List.map type_of_types tys)
       | TyVar ty_var -> ATyVar ty_var
 
+  and type_of_expression' tenv pos ex = 
+    type_of_expression tenv pos (Position.value ex)
+
   (** [type_of_expression tenv pos e] computes a type for [e] if it exists. *)
   and type_of_expression tenv pos : expression -> aty = function
     | Literal l -> 
@@ -250,7 +253,15 @@ let typecheck tenv ast : typing_environment =
         let scheme_var = lookup_type_scheme_of_value pos (Position.value id_loc) tenv in
         instantiate_type_scheme scheme_var types
 
+    | Tagged (con_loc, None, exs) ->
+        let scheme_con = lookup_type_scheme_of_constructor (Position.value con_loc) tenv in 
+        let ty_exs = List.map (type_of_expression' tenv pos) exs in 
+        instantiate_type_scheme scheme_con ty_exs
 
+    | Tagged (con_loc, Some tys, exs) ->
+        let scheme_con = lookup_type_scheme_of_constructor (Position.value con_loc) tenv in 
+        let types = List.map aty_of_ty' tys in 
+        instantiate_type_scheme scheme_con types
 
     | _ -> failwith "Students! This is your job!"
 
