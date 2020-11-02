@@ -220,9 +220,36 @@ let typecheck tenv ast : typing_environment =
     let ity = located (type_of_expression tenv) e in
     check_expected_type pos xty ity
 
+  and type_of_literal : literal -> aty = function
+    | LInt _    -> hint
+    | LString _ -> hstring
+    | LChar _   -> hchar
+
+  and id_of_id_loc id_loc = 
+    match (Position.value id_loc) with 
+      | Id id   -> id
+
+  and type_of_types ty_loc = 
+    match (Position.value ty_loc) with 
+      | TyCon (ty_con, tys) -> ATyCon (ty_con, List.map type_of_types tys)
+      | TyArrow (ty1, ty2) -> ATyArrow (type_of_types ty1, type_of_types ty2)
+      | TyTuple tys -> ATyTuple (List.map type_of_types tys)
+      | TyVar ty_var -> ATyVar ty_var
+
   (** [type_of_expression tenv pos e] computes a type for [e] if it exists. *)
-  and type_of_expression tenv pos : expression -> aty =
-failwith "Students! This is your job!"
+  and type_of_expression tenv pos : expression -> aty = function
+    | Literal l -> 
+        type_of_literal (Position.value l)
+
+
+    | Variable (id_loc, Some tys) ->
+        let types = List.map aty_of_ty' tys in 
+        let scheme_var = lookup_type_scheme_of_value pos (Position.value id_loc) tenv in
+        instantiate_type_scheme scheme_var types
+
+
+
+    | _ -> failwith "Students! This is your job!"
 
   and patterns tenv = function
     | [] ->
