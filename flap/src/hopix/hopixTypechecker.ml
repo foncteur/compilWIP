@@ -241,6 +241,9 @@ let typecheck tenv ast : typing_environment =
     | Literal l -> 
         type_of_literal (Position.value l)
 
+    | Variable (id_loc, None) ->
+        let scheme_var = lookup_type_scheme_of_value pos (Position.value id_loc) tenv in 
+        instantiate_type_scheme scheme_var []
 
     | Variable (id_loc, Some tys) ->
         let types = List.map aty_of_ty' tys in 
