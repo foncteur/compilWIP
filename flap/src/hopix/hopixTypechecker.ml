@@ -334,10 +334,25 @@ let typecheck tenv ast : typing_environment =
     | Define (v, e) ->
         located (type_of_expression (value_definition tenv v)) e
 
-    | Fun (FunctionDefinition (p, e)) ->
+    | TypeAnnotation
+          ({ Position.value = Fun (FunctionDefinition (p, e)) }, ty) ->
+        let aty = aty_of_ty' ty in
+        let (aty1, aty2) = match aty with
+        | ATyArrow (aty1, aty2) -> (aty1, aty2)
+        | _ -> type_error pos "A function must have an arrow type."
+        in
         let tenv, ty1 = located (pattern tenv) p in
-        let ty2 = located (type_of_expression tenv) e in
-        ATyArrow (ty1, ty2)
+        (* check_expected_type (Position.position p) ty1 aty1; *)
+        check_expression_monotype tenv aty2 e;
+        aty
+
+    | Fun _ ->
+        assert false (* by check_program_is_fully_annotated *)
+        (*
+          let tenv, ty1 = located (pattern tenv) p in
+          let ty2 = located (type_of_expression tenv) e in
+          ATyArrow (ty1, ty2)
+        *)
 
     | Apply (e1, e2) ->
         let ty1 = located (type_of_expression tenv) e1 in
