@@ -113,6 +113,13 @@ let invalid_instantiation pos given expected =
          %d given while %d were expected." given expected
     )
 
+let safe_instantiate_type_scheme pos scheme types =
+  try
+    instantiate_type_scheme scheme types
+  with
+  | InvalidInstantiation (expected, given) ->
+    invalid_instantiation pos given expected
+
 (** [typecheck tenv ast] checks that [ast] is a well-formed program
     under the typing environment [tenv]. *)
 let typecheck tenv ast : typing_environment =
@@ -250,7 +257,7 @@ let typecheck tenv ast : typing_environment =
         | UnboundIdentifier (pos, Id x) ->
           type_error pos (Printf.sprintf "Unbound value `%s'.\n" x)
         in
-        instantiate_type_scheme scheme_var types
+        safe_instantiate_type_scheme pos scheme_var types
 
     | Tagged (con_loc, None, exs) ->
         assert false (* by check_program_is_fully_annotated *)
@@ -264,20 +271,50 @@ let typecheck tenv ast : typing_environment =
           let KId x = Position.value con_loc in
           type_error pos (Printf.sprintf "Unbound constructor `%s'.\n" x)
         in
-        let ty_exs = List.map (located (type_of_expression tenv)) exs in
-        (* todo *)
-        instantiate_type_scheme scheme_con types
+        let cty = safe_instantiate_type_scheme pos scheme_con types in
+        let ins, out = destruct_arrows cty in
+        if List.length ins <> List.length exs then
+          type_error pos (Printf.sprintf "Incorrect number of arguments to constructor.\n");
+        List.iter2 (check_expression_monotype tenv) ins exs;
+        out
 
     | Record (fields, None) ->
         assert false (* by check_program_is_fully_annotated *)
 
     | Record (fields, Some tys) ->
         let types = List.map aty_of_ty' tys in
-        assert false
+        assert (fields <> []);
+        let f0 = Position.value (fst (List.hd fields)) in
+        let tycon, arity, labels = try
+          lookup_type_constructor_of_label f0 tenv
+        with
+        | UnboundLabel ->
+          let LId x = f0 in
+          type_error pos (Printf.sprintf "Label `%s' is unbound." x)
+        in
+        assert (List.length types = arity);
+        ignore (List.map (fun (_, e) -> located (type_of_expression tenv) e) fields);
+        (* todo check args *)
+        ATyCon (tycon, types)
 
     | Field (e, l) ->
         let ty = located (type_of_expression tenv) e in
-        assert false
+        let lty = try
+            lookup_type_scheme_of_label (Position.value l) tenv
+        with
+        | UnboundLabel ->
+          let LId x = Position.value l in
+          type_error pos (Printf.sprintf "Label `%s' is unbound." x)
+        in
+        let (tycon, _, _) =
+          lookup_type_constructor_of_label (Position.value l) tenv in
+        (match ty with
+        | ATyCon (tycon2, types) when tycon = tycon2 ->
+          let rty = instantiate_type_scheme lty types in
+          (match rty with
+          | ATyArrow (ity, oty) -> assert (ity = ty); oty
+          | _ -> assert false)
+        | _ -> type_error pos "Incorrect type for record")
 
     | Tuple es ->
         ATyTuple (List.map (located (type_of_expression tenv)) es)
@@ -297,7 +334,10 @@ let typecheck tenv ast : typing_environment =
     | Define (v, e) ->
         located (type_of_expression (value_definition tenv v)) e
 
-    | Fun _ -> assert false
+    | Fun (FunctionDefinition (p, e)) ->
+        let tenv, ty1 = located (pattern tenv) p in
+        let ty2 = located (type_of_expression tenv) e in
+        ATyArrow (ty1, ty2)
 
     | Apply (e1, e2) ->
         let ty1 = located (type_of_expression tenv) e1 in
@@ -312,15 +352,32 @@ let typecheck tenv ast : typing_environment =
         href (located (type_of_expression tenv) e)
 
     | Assign (e1, e2) ->
-        let ty = located (type_of_expression tenv) e2 in
-        check_expression_monotype tenv (href ty) e1;
+        let ty = located (type_of_expression tenv) e1 in
+        check_expression_monotype tenv (type_of_reference_type ty) e2;
         hunit
 
     | Read e ->
         let ty = located (type_of_expression tenv) e in
         type_of_reference_type ty
 
-    | Case _ -> assert false
+    | Case (e, bs) ->
+        let ty = located (type_of_expression tenv) e in
+        assert (bs <> []);
+        let pattern_env b =
+          let Branch (p, _) = Position.value b in
+          let tenv, ty2 = located (pattern tenv) p in
+          if ty <> ty2 then
+            type_error (Position.position b)
+              "This pattern is not compatible with the matched value.\n";
+          tenv
+        in
+        let rty =
+          let Branch (p, e) = Position.value (List.hd bs) in
+          located (type_of_expression (pattern_env (List.hd bs))) e
+        in
+        List.iter (fun ({ Position.value = Branch (p, e) } as b) ->
+          check_expression_monotype (pattern_env b) rty e) (List.tl bs);
+        rty
 
     | IfThenElse (e1, e2, e3) ->
         check_expression_monotype tenv hbool e1;
