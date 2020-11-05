@@ -225,43 +225,125 @@ let typecheck tenv ast : typing_environment =
     | LString _ -> hstring
     | LChar _   -> hchar
 
-  and id_of_id_loc id_loc = 
-    match (Position.value id_loc) with 
+  and id_of_id_loc id_loc =
+    match (Position.value id_loc) with
       | Id id   -> id
 
-  and type_of_types ty_loc = 
-    match (Position.value ty_loc) with 
+  and type_of_types ty_loc =
+    match (Position.value ty_loc) with
       | TyCon (ty_con, tys) -> ATyCon (ty_con, List.map type_of_types tys)
       | TyArrow (ty1, ty2) -> ATyArrow (type_of_types ty1, type_of_types ty2)
       | TyTuple tys -> ATyTuple (List.map type_of_types tys)
       | TyVar ty_var -> ATyVar ty_var
 
-  and type_of_expression' tenv pos ex = 
-    type_of_expression tenv pos (Position.value ex)
-
   (** [type_of_expression tenv pos e] computes a type for [e] if it exists. *)
   and type_of_expression tenv pos : expression -> aty = function
-    | Literal l -> 
+    | Literal l ->
         type_of_literal (Position.value l)
 
-    | Variable (id_loc, None) ->
-        let scheme_var = lookup_type_scheme_of_value pos (Position.value id_loc) tenv in 
-        instantiate_type_scheme scheme_var []
-
-    | Variable (id_loc, Some tys) ->
-        let types = List.map aty_of_ty' tys in 
-        let scheme_var = lookup_type_scheme_of_value pos (Position.value id_loc) tenv in
+    | Variable (id_loc, tys) ->
+        let tys = match tys with None -> [] | Some tys -> tys in
+        let types = List.map aty_of_ty' tys in
+        let scheme_var = try
+          located lookup_type_scheme_of_value id_loc tenv
+        with
+        | UnboundIdentifier (pos, Id x) ->
+          type_error pos (Printf.sprintf "Unbound value `%s'.\n" x)
+        in
         instantiate_type_scheme scheme_var types
 
-    | Tagged (con_loc, None, exs) ->
-        let scheme_con = lookup_type_scheme_of_constructor (Position.value con_loc) tenv in 
-        let ty_exs = List.map (type_of_expression' tenv pos) exs in 
+    | Tagged (con_loc, tys, exs) ->
+        let tys = match tys with None -> [] | Some tys -> tys in
+        let types = List.map aty_of_ty' tys in
+        let scheme_con = try
+          lookup_type_scheme_of_constructor (Position.value con_loc) tenv
+        with
+        | UnboundConstructor ->
+          let KId x = Position.value con_loc in
+          type_error pos (Printf.sprintf "Unbound constructor `%s'.\n" x)
+        in
+        let ty_exs = List.map (located (type_of_expression tenv)) exs in
         instantiate_type_scheme scheme_con ty_exs
 
     | Tagged (con_loc, Some tys, exs) ->
-        let scheme_con = lookup_type_scheme_of_constructor (Position.value con_loc) tenv in 
-        let types = List.map aty_of_ty' tys in 
+        let scheme_con = lookup_type_scheme_of_constructor (Position.value con_loc) tenv in
+        let types = List.map aty_of_ty' tys in
         instantiate_type_scheme scheme_con types
+
+    | Record (fields, tys) ->
+        let tys = match tys with None -> [] | Some tys -> tys in
+        let types = List.map aty_of_ty' tys in
+        assert false
+
+    | Field (e, l) ->
+        let ty = located (type_of_expression tenv) e in
+        assert false
+
+    | Tuple es ->
+        ATyTuple (List.map (located (type_of_expression tenv)) es)
+
+    | Sequence [] ->
+        hunit
+
+    | Sequence es ->
+        let rec iter = function
+        | [] -> hunit
+        | [e] -> located (type_of_expression tenv) e
+        | e :: es ->
+            check_expression_monotype tenv hunit e;
+            iter es
+        in iter es
+
+    | Define (v, e) ->
+        located (type_of_expression (value_definition tenv v)) e
+
+    | Fun _ -> assert false
+
+    | Apply (e1, e2) ->
+        let ty1 = located (type_of_expression tenv) e1 in
+        let (inty, outty) = match ty1 with
+          | ATyArrow (inty, outty) -> (inty, outty)
+          | _ -> type_error pos "Only functions can be applied.\n"
+        in
+        check_expression_monotype tenv inty e2;
+        outty
+
+    | Ref e ->
+        href (located (type_of_expression tenv) e)
+
+    | Assign (e1, e2) ->
+        let ty = located (type_of_expression tenv) e2 in
+        check_expression_monotype tenv (href ty) e1;
+        hunit
+
+    | Read e ->
+        let ty = located (type_of_expression tenv) e in
+        type_of_reference_type ty
+
+    | Case _ -> assert false
+
+    | IfThenElse (e1, e2, e3) ->
+        check_expression_monotype tenv hbool e1;
+        let ty = located (type_of_expression tenv) e2 in
+        check_expression_monotype tenv ty e3;
+        ty
+
+    | While (e1, e2) ->
+        check_expression_monotype tenv hbool e1;
+        check_expression_monotype tenv hunit e2;
+        hunit
+
+    | For (x, e1, e2, e3) ->
+        check_expression_monotype tenv hint e1;
+        check_expression_monotype tenv hint e2;
+        let nenv = bind_value (Position.value x) (monotype hint) tenv in
+        check_expression_monotype nenv hunit e3;
+        hunit
+
+    | TypeAnnotation (e, ty) ->
+        let aty = aty_of_ty' ty in
+        check_expression_monotype tenv aty e;
+        aty
 
     | _ -> failwith "Students! This is your job!"
 
