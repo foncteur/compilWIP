@@ -252,8 +252,10 @@ let typecheck tenv ast : typing_environment =
         in
         instantiate_type_scheme scheme_var types
 
-    | Tagged (con_loc, tys, exs) ->
-        let tys = match tys with None -> [] | Some tys -> tys in
+    | Tagged (con_loc, None, exs) ->
+        assert false (* by check_program_is_fully_annotated *)
+
+    | Tagged (con_loc, Some tys, exs) ->
         let types = List.map aty_of_ty' tys in
         let scheme_con = try
           lookup_type_scheme_of_constructor (Position.value con_loc) tenv
@@ -263,15 +265,13 @@ let typecheck tenv ast : typing_environment =
           type_error pos (Printf.sprintf "Unbound constructor `%s'.\n" x)
         in
         let ty_exs = List.map (located (type_of_expression tenv)) exs in
-        instantiate_type_scheme scheme_con ty_exs
-
-    | Tagged (con_loc, Some tys, exs) ->
-        let scheme_con = lookup_type_scheme_of_constructor (Position.value con_loc) tenv in
-        let types = List.map aty_of_ty' tys in
+        (* todo *)
         instantiate_type_scheme scheme_con types
 
-    | Record (fields, tys) ->
-        let tys = match tys with None -> [] | Some tys -> tys in
+    | Record (fields, None) ->
+        assert false (* by check_program_is_fully_annotated *)
+
+    | Record (fields, Some tys) ->
         let types = List.map aty_of_ty' tys in
         assert false
 
@@ -358,8 +358,31 @@ let typecheck tenv ast : typing_environment =
   (** [pattern tenv pos p] computes a new environment completed with
       the variables introduced by the pattern [p] as well as the type
       of this pattern. *)
-  and pattern tenv pos =
-  failwith "Students! This is your job!"
+  and pattern tenv pos = function
+    | PTypeAnnotation ({ Position.value = PWildcard }, ty) ->
+      tenv, aty_of_ty' ty
+    | PTypeAnnotation ({ Position.value = PVariable v }, ty) ->
+      let aty = aty_of_ty' ty in
+      bind_value (Position.value v) (monotype aty) tenv, aty
+    | PRecord (fields, Some tys) ->
+      let tys = List.map aty_of_ty' tys in
+      assert false
+    | PTuple ps ->
+      let tenv, tys = patterns tenv ps in
+      tenv, ATyTuple tys
+    | PTypeAnnotation (p, ty) ->
+      let aty = aty_of_ty' ty in
+      let tenv, ty2 = located (pattern tenv) p in
+      check_expected_type pos aty ty2;
+      tenv, aty
+    | PVariable _ | PWildcard | PRecord (_, None) | PTaggedValue (_, None, _) ->
+      assert false (* by check_program_is_fully_annotated *)
+    | PTaggedValue (_, Some tys, ps) ->
+       assert false
+    | POr ps | PAnd ps ->
+      assert false
+    | PLiteral l ->
+      tenv, type_of_literal (Position.value l)
   in
   program ast
 
