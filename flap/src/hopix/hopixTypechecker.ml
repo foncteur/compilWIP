@@ -205,7 +205,7 @@ let typecheck tenv ast : typing_environment =
        match aty with
        | Scheme (ts, ATyArrow (_, out)) ->
           let tenv = bind_type_variables pos tenv ts in
-          let tenv, _ = located (pattern tenv) p in
+          let tenv, _ , _= located (pattern tenv) p in
           check_expression_monotype tenv out e
        | _ ->
           type_error pos "A function must have an arrow type."
@@ -374,7 +374,7 @@ let typecheck tenv ast : typing_environment =
         | ATyArrow (aty1, aty2) -> (aty1, aty2)
         | _ -> type_error pos "A function must have an arrow type."
         in
-        let tenv, ty1 = located (pattern tenv) p in
+        let tenv, ty1, _ = located (pattern tenv) p in
         (* check_expected_type (Position.position p) ty1 aty1; *)
         check_expression_monotype tenv aty2 e;
         (* This is needed for correctness; putting it before the previous line
@@ -387,7 +387,7 @@ let typecheck tenv ast : typing_environment =
         assert false (* by check_program_is_fully_annotated *)
         (* Actually, we can easily handle this case. *)
         (*
-          let tenv, ty1 = located (pattern tenv) p in
+          let tenv, ty1, _ = located (pattern tenv) p in
           let ty2 = located (type_of_expression tenv) e in
           ATyArrow (ty1, ty2)
         *)
@@ -413,7 +413,7 @@ let typecheck tenv ast : typing_environment =
         assert (bs <> []);
         let pattern_env b =
           let Branch (p, _) = Position.value b in
-          let tenv, ty2 = located (pattern tenv) p in
+          let tenv, ty2, _ = located (pattern tenv) p in
           if ty <> ty2 then
             type_error (Position.position b)
               "This pattern is not compatible with the matched value.\n";
@@ -452,21 +452,30 @@ let typecheck tenv ast : typing_environment =
 
   and patterns tenv = function
     | [] ->
-       tenv, []
+       tenv, [], []
     | p :: ps ->
-       let tenv, ty = located (pattern tenv) p in
-       let tenv, tys = patterns tenv ps in
-       tenv, ty :: tys
+       let tenv, ty, def = located (pattern tenv) p in
+       let tenv, tys, defs = patterns tenv ps in
+       tenv, ty :: tys, check_disjoint_and_concat def defs
+
+  and check_disjoint_and_concat vs1 vs2 =
+    List.iter (fun v2 ->
+      if List.exists (fun v1 -> Position.value v1 = Position.value v2) vs1 then
+        type_error (Position.position v2)
+          "This is the second occurrence of this variable in the pattern.\n"
+    ) vs2;
+    vs1 @ vs2
 
   (** [pattern tenv pos p] computes a new environment completed with
       the variables introduced by the pattern [p] as well as the type
-      of this pattern. *)
+      of this pattern, and the list of variables that were defined by
+      the pattern (and their positions). *)
   and pattern tenv pos = function
     | PTypeAnnotation ({ Position.value = PWildcard }, ty) ->
-      tenv, aty_of_ty' ty
+      tenv, aty_of_ty' ty, []
     | PTypeAnnotation ({ Position.value = PVariable v }, ty) ->
       let aty = aty_of_ty' ty in
-      bind_value (Position.value v) (monotype aty) tenv, aty
+      bind_value (Position.value v) (monotype aty) tenv, aty, [v]
     | PRecord (fields, Some tys) ->
       let tys = List.map aty_of_ty' tys in
       assert (fields <> []);
@@ -479,7 +488,7 @@ let typecheck tenv ast : typing_environment =
         type_error pos (Printf.sprintf
           "There is no type definition for the label `%s'." x)
       in
-      let nenv, pts = patterns tenv (List.map snd fields) in
+      let nenv, pts, def = patterns tenv (List.map snd fields) in
       List.iter2 (fun (l, p) ty ->
         if not (List.mem (Position.value l) labels) then begin
           let LId x = Position.value l in
@@ -500,15 +509,15 @@ let typecheck tenv ast : typing_environment =
           )
         end
       ) fields pts;
-      nenv, ATyCon (tycon, tys)
+      nenv, ATyCon (tycon, tys), def
     | PTuple ps ->
-      let tenv, tys = patterns tenv ps in
-      tenv, ATyTuple tys
+      let tenv, tys, def = patterns tenv ps in
+      tenv, ATyTuple tys, def
     | PTypeAnnotation (p, ty) ->
       let aty = aty_of_ty' ty in
-      let tenv, ty2 = located (pattern tenv) p in
+      let tenv, ty2, def = located (pattern tenv) p in
       check_expected_type pos aty ty2;
-      tenv, aty
+      tenv, aty, def
     | PVariable _ | PWildcard | PRecord (_, None) | PTaggedValue (_, None, _) ->
       assert false (* by check_program_is_fully_annotated *)
     | PTaggedValue (c, Some tys, ps) ->
@@ -524,21 +533,38 @@ let typecheck tenv ast : typing_environment =
       let ins, out = destruct_arrows cty in
       if List.length ins <> List.length ps then
         type_error pos "Invalid number of arguments to constructor.\n";
-      let tenv, argtys = patterns tenv ps in
+      let tenv, argtys, def = patterns tenv ps in
       List.iter2 (check_expected_type pos) ins argtys;
-      tenv, out
+      tenv, out, def
     | POr ps ->
-      assert false
+      let ls = List.map (located (pattern tenv)) ps in
+      assert (ls <> []);
+      let tenv1, ty1, def1 = List.hd ls in
+      let dv = List.sort compare (List.map Position.value def1) in
+      List.iter (fun (tenv, ty, def) ->
+        if ty <> ty1 then
+          type_error pos "All patterns must have the same type.\n";
+        if List.sort compare (List.map Position.value def) <> dv then
+          type_error pos "All patterns must bind the same variables.\n";
+        List.iter (fun v ->
+          let vty = located lookup_type_scheme_of_value v tenv in
+          let vty1 = located lookup_type_scheme_of_value v tenv1 in
+          if vty <> vty1 then
+            type_error (Position.position v)
+              "Variable must be bound to the same type in all branches.\n"
+        ) def
+      ) (List.tl ls);
+      tenv1, ty1, def1
     | PAnd ps ->
-      let tenv, tys = patterns tenv ps in
+      let tenv, tys, def = patterns tenv ps in
       assert (tys <> []);
       List.iter (fun t ->
         if t <> List.hd tys then
           type_error pos "All patterns must have the same type.\n")
         (List.tl tys);
-      tenv, List.hd tys
+      tenv, List.hd tys, def
     | PLiteral l ->
-      tenv, type_of_literal (Position.value l)
+      tenv, type_of_literal (Position.value l), []
   in
   program ast
 
