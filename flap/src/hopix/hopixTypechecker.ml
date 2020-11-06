@@ -301,7 +301,6 @@ let typecheck tenv ast : typing_environment =
           let LId x = f0 in
           type_error pos (Printf.sprintf "Label `%s' is unbound." x)
         in
-        assert (List.length types = arity);
         List.iter (fun (l, e) ->
           if not (List.mem (Position.value l) labels) then begin
             let LId x = Position.value l in
@@ -470,7 +469,38 @@ let typecheck tenv ast : typing_environment =
       bind_value (Position.value v) (monotype aty) tenv, aty
     | PRecord (fields, Some tys) ->
       let tys = List.map aty_of_ty' tys in
-      assert false
+      assert (fields <> []);
+      let f0 = Position.value (fst (List.hd fields)) in
+      let tycon, arity, labels = try
+        lookup_type_constructor_of_label f0 tenv
+      with
+      | UnboundLabel ->
+        let LId x = f0 in
+        type_error pos (Printf.sprintf
+          "There is no type definition for the label `%s'." x)
+      in
+      let nenv, pts = patterns tenv (List.map snd fields) in
+      List.iter2 (fun (l, p) ty ->
+        if not (List.mem (Position.value l) labels) then begin
+          let LId x = Position.value l in
+          let TCon y = tycon in
+          type_error (Position.position l)
+            (Printf.sprintf "Label `%s' does not belong to record `%s'" x y)
+        end;
+        let ts = lookup_type_scheme_of_label (Position.value l) tenv in
+        let ety = match safe_instantiate_type_scheme pos ts tys with
+          | ATyArrow (_, out) -> out
+          | _ -> assert false
+        in
+        if ety <> ty then begin
+          let LId x = Position.value l in
+          type_error pos (Printf.sprintf
+            "The field `%s' has type `%s' while it should have type `%s'.\n"
+            x (print_aty ty) (print_aty ety)
+          )
+        end
+      ) fields pts;
+      nenv, ATyCon (tycon, tys)
     | PTuple ps ->
       let tenv, tys = patterns tenv ps in
       tenv, ATyTuple tys
