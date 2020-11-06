@@ -243,6 +243,14 @@ let typecheck tenv ast : typing_environment =
       | TyTuple tys -> ATyTuple (List.map type_of_types tys)
       | TyVar ty_var -> ATyVar ty_var
 
+  and apply_function tenv pos fty e =
+    let (inty, outty) = match fty with
+    | ATyArrow (inty, outty) -> (inty, outty)
+    | _ -> type_error pos "Only functions can be applied.\n"
+    in
+    check_expression_monotype tenv inty e;
+    outty
+
   (** [type_of_expression tenv pos e] computes a type for [e] if it exists. *)
   and type_of_expression tenv pos : expression -> aty = function
     | Literal l ->
@@ -272,11 +280,12 @@ let typecheck tenv ast : typing_environment =
           type_error pos (Printf.sprintf "Unbound constructor `%s'.\n" x)
         in
         let cty = safe_instantiate_type_scheme pos scheme_con types in
-        let ins, out = destruct_arrows cty in
+        (* let ins, out = destruct_arrows cty in
         if List.length ins <> List.length exs then
           type_error pos (Printf.sprintf "Incorrect number of arguments to constructor.\n");
         List.iter2 (check_expression_monotype tenv) ins exs;
-        out
+        out *)
+        List.fold_left (apply_function tenv pos) cty exs
 
     | Record (fields, None) ->
         assert false (* by check_program_is_fully_annotated *)
@@ -293,8 +302,33 @@ let typecheck tenv ast : typing_environment =
           type_error pos (Printf.sprintf "Label `%s' is unbound." x)
         in
         assert (List.length types = arity);
-        ignore (List.map (fun (_, e) -> located (type_of_expression tenv) e) fields);
-        (* todo check args *)
+        List.iter (fun (l, e) ->
+          if not (List.mem (Position.value l) labels) then begin
+            let LId x = Position.value l in
+            let TCon y = tycon in
+            type_error (Position.position l)
+              (Printf.sprintf "Label `%s' does not belong to record `%s'" x y)
+          end;
+          let ts = lookup_type_scheme_of_label (Position.value l) tenv in
+          let ety = match safe_instantiate_type_scheme pos ts types with
+            | ATyArrow (_, out) -> out
+            | _ -> assert false
+          in
+          let ty = located (type_of_expression tenv) e in
+          if ety <> ty then begin
+            let LId x = Position.value l in
+            (* Note: typo in tests *)
+            type_error pos (Printf.sprintf
+              "The field `%s` as type `%s' while it should have type `%s'.\n"
+              x (print_aty ty) (print_aty ety)
+            )
+          end
+        ) fields;
+        List.iter (fun l2 ->
+          if not (List.exists (fun (l, e) -> l2 = Position.value l) fields) then
+            let LId x = l2 in
+            type_error pos (Printf.sprintf "Label `%s' is missing.\n" x)
+        ) labels;
         ATyCon (tycon, types)
 
     | Field (e, l) ->
@@ -314,7 +348,7 @@ let typecheck tenv ast : typing_environment =
           (match rty with
           | ATyArrow (ity, oty) -> assert (ity = ty); oty
           | _ -> assert false)
-        | _ -> type_error pos "Incorrect type for record")
+        | _ -> type_error pos "Incorrect type for record.\n")
 
     | Tuple es ->
         ATyTuple (List.map (located (type_of_expression tenv)) es)
@@ -344,10 +378,15 @@ let typecheck tenv ast : typing_environment =
         let tenv, ty1 = located (pattern tenv) p in
         (* check_expected_type (Position.position p) ty1 aty1; *)
         check_expression_monotype tenv aty2 e;
+        (* This is needed for correctness; putting it before the previous line
+           produces better error messages (in the pattern instead of in the
+           function) but is not compatible with the tests *)
+        check_expected_type (Position.position p) ty1 aty1;
         aty
 
     | Fun _ ->
         assert false (* by check_program_is_fully_annotated *)
+        (* Actually, we can easily handle this case. *)
         (*
           let tenv, ty1 = located (pattern tenv) p in
           let ty2 = located (type_of_expression tenv) e in
@@ -356,12 +395,7 @@ let typecheck tenv ast : typing_environment =
 
     | Apply (e1, e2) ->
         let ty1 = located (type_of_expression tenv) e1 in
-        let (inty, outty) = match ty1 with
-          | ATyArrow (inty, outty) -> (inty, outty)
-          | _ -> type_error pos "Only functions can be applied.\n"
-        in
-        check_expression_monotype tenv inty e2;
-        outty
+        apply_function tenv pos ty1 e2
 
     | Ref e ->
         href (located (type_of_expression tenv) e)
@@ -417,8 +451,6 @@ let typecheck tenv ast : typing_environment =
         check_expression_monotype tenv aty e;
         aty
 
-    | _ -> failwith "Students! This is your job!"
-
   and patterns tenv = function
     | [] ->
        tenv, []
@@ -449,10 +481,32 @@ let typecheck tenv ast : typing_environment =
       tenv, aty
     | PVariable _ | PWildcard | PRecord (_, None) | PTaggedValue (_, None, _) ->
       assert false (* by check_program_is_fully_annotated *)
-    | PTaggedValue (_, Some tys, ps) ->
-       assert false
-    | POr ps | PAnd ps ->
+    | PTaggedValue (c, Some tys, ps) ->
+      let types = List.map aty_of_ty' tys in
+      let scheme = try
+        lookup_type_scheme_of_constructor (Position.value c) tenv
+      with
+      | UnboundConstructor ->
+        let KId x = Position.value c in
+        type_error pos (Printf.sprintf "Unbound constructor `%s'.\n" x)
+      in
+      let cty = safe_instantiate_type_scheme pos scheme types in
+      let ins, out = destruct_arrows cty in
+      if List.length ins <> List.length ps then
+        type_error pos "Invalid number of arguments to constructor.\n";
+      let tenv, argtys = patterns tenv ps in
+      List.iter2 (check_expected_type pos) ins argtys;
+      tenv, out
+    | POr ps ->
       assert false
+    | PAnd ps ->
+      let tenv, tys = patterns tenv ps in
+      assert (tys <> []);
+      List.iter (fun t ->
+        if t <> List.hd tys then
+          type_error pos "All patterns must have the same type.\n")
+        (List.tl tys);
+      tenv, List.hd tys
     | PLiteral l ->
       tenv, type_of_literal (Position.value l)
   in
