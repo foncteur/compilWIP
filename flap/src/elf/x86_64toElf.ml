@@ -12,7 +12,7 @@ let installation_directory () =
 let gcc ~src ~tgt =
   let open Filename in
   let runtime =
-    concat (installation_directory ()) @@ concat "runtime" "runtime.c"
+    concat (installation_directory ()) "runtime.c"
   in
   Printf.sprintf
     "gcc -no-pie -g %s %s -o %s"

@@ -10,6 +10,7 @@
 (copy_files hopix/*.{mll,mly})
 (copy_files hobix/*.{mll,mly})
 (copy_files retrolix/*.{mll,mly})
+(copy_files# ../runtime/runtime.c)
 
 (executable
   (name flap)
