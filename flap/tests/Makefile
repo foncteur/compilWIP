@@ -3,7 +3,8 @@ JALONS=\
 	01-Parsing.results \
 	02-Interpreter.results \
 	03-Typing.results \
-	04-Retrolix_to_x86-64.results
+	04-Retrolix_to_x86-64.results \
+	06-Hobix_to_Fopix.results
 EXTS=parsing.hopix eval.hopix typing.hopix hobix fopix retrolix
 
 .PHONY: all clean test FAKE
@@ -60,3 +61,6 @@ all.results: $(JALONS)
 
 %.output: %.retrolix $(FLAP)
 	@$(FLAP) -s retrolix -t elf --run true -VV true $< >$@ 2>&1; exit 0
+
+%.output: %.hobix $(FLAP)
+	@$(FLAP) -s hobix -t fopix -r true $< >$@ 2>&1; exit 0
