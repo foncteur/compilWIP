@@ -1,0 +1,20 @@
+def fact()
+local n:
+  n: n <- copy %rdi;
+  l10: jumpif eq %rdi, 0 -> l11, l13;
+  l11: %rax <- copy 1;
+  l12: ret;
+  l13: %rdi <- sub %rdi, 1;
+  l14: fact();
+  l15: %rax <- mul %rax, n;
+  l16: ret;
+end
+
+globals (x)
+  l00: %rdi <- copy 5;
+  l01: fact();
+  l02: x <- copy %rax;
+  l03: %rdi <- copy x;
+  l04: observe_int();
+  l05: exit;
+end

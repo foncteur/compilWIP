@@ -1,0 +1,6 @@
+globals (x, y, z, k)
+  l00: x <- copy 6;
+  l01: y <- copy 7;
+  l02: z <- mul y, x;
+  l03: k <- sub z, x;
+end

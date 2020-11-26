@@ -501,7 +501,7 @@ module InstructionSelector : InstructionSelector =
     open T
 
     let mov ~(dst : dst) ~(src : src) =
-      failwith "Students! This is your job!"
+      insns [movq ~src ~dst:(`Reg R15); movq ~src:(`Reg R15) ~dst]
 
     let bin ins ~dst ~srcl ~srcr =
       failwith "Students! This is your job!"
@@ -510,10 +510,18 @@ module InstructionSelector : InstructionSelector =
       failwith "Students! This is your job!"
 
     let sub ~dst ~srcl ~srcr =
-      failwith "Students! This is your job!"
+      insns [
+        movq ~src:srcl ~dst:(`Reg R15);
+        subq ~src:srcr ~dst:(`Reg R15);
+        movq ~src:(`Reg R15) ~dst
+      ]
 
     let mul ~dst ~srcl ~srcr =
-      failwith "Students! This is your job!"
+    insns [
+      movq ~src:srcl ~dst:(`Reg R15);
+      imulq ~src:srcr ~dst:(`Reg R15);
+      movq ~src:(`Reg R15) ~dst
+    ]
 
     let div ~dst ~srcl ~srcr =
       failwith "Students! This is your job!"
@@ -559,21 +567,36 @@ module FrameManager(IS : InstructionSelector) : FrameManager =
 
     let frame_descriptor ~params ~locals =
       (* Student! Implement me! *)
-      { param_count = 0; locals_space = 0; stack_map = S.IdMap.empty; }
+      {
+        param_count = List.length params;
+        locals_space = Mint.size_in_bytes * List.length locals;
+        stack_map = S.IdMap.empty;
+      }
 
-    let location_of fd id =
-      failwith "Students! This is your job!"
+    let location_of fd (S.Id id) =
+      T.addr ~offset:(Lab id) ~base:RIP ()
 
     let function_prologue fd =
-      (* Student! Implement me! *)
-      []
+      if is_empty_frame fd then [] else
+      T.insns [
+        T.pushq ~src:(`Reg RBP); T.movq ~src:(`Reg RSP) ~dst:(`Reg RBP);
+        T.subq ~dst:(`Reg RSP) ~src:(`Imm (Lit (Mint.of_int fd.locals_space)))
+      ]
 
     let function_epilogue fd =
-      (* Student! Implement me! *)
-      []
+      if is_empty_frame fd then [] else
+      T.insns [
+        T.addq ~dst:(`Reg RSP) ~src:(`Imm (Lit (Mint.of_int fd.locals_space)));
+        T.popq ~dst:(`Reg RBP)
+      ]
 
     let call fd ~kind ~f ~args =
-      failwith "Students! This is your job!"
+      (* TODO alignement de la pile *)
+      let off = Mint.size_in_bytes * List.length args in
+      T.insns (
+        List.rev_map (fun src -> T.pushq ~src) args @
+        [T.calldi f; T.addq ~dst:(`Reg RSP) ~src:(`Imm (Lit (Mint.of_int off)))]
+      )
 
   end
 

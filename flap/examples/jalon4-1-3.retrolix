@@ -1,0 +1,8 @@
+globals(res)
+  l00: %rax <- copy 1;
+  l01: %rax <- mul %rax, 2;
+  l02: %rax <- mul %rax, 3;
+  l03: %rax <- mul %rax, 4;
+  l04: %rax <- mul %rax, 5;
+  l05: res <- copy %rax;
+end
