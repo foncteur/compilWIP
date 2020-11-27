@@ -501,42 +501,57 @@ module InstructionSelector : InstructionSelector =
     open T
 
     let mov ~(dst : dst) ~(src : src) =
-      insns [movq ~src ~dst:(`Reg R15); movq ~src:(`Reg R15) ~dst]
+      insns [movq ~src ~dst:scratch; movq ~src:scratch ~dst]
 
     let bin ins ~dst ~srcl ~srcr =
-      failwith "Students! This is your job!"
-
-    let add ~dst ~srcl ~srcr =
-      failwith "Students! This is your job!"
-
-    let sub ~dst ~srcl ~srcr =
       insns [
-        movq ~src:srcl ~dst:(`Reg R15);
-        subq ~src:srcr ~dst:(`Reg R15);
-        movq ~src:(`Reg R15) ~dst
+        movq ~src:srcl ~dst:scratch;
+        ins ~src:srcr ~dst:scratch;
+        movq ~src:scratch ~dst
       ]
 
-    let mul ~dst ~srcl ~srcr =
-    insns [
-      movq ~src:srcl ~dst:(`Reg R15);
-      imulq ~src:srcr ~dst:(`Reg R15);
-      movq ~src:(`Reg R15) ~dst
-    ]
+    let add ~dst ~srcl ~srcr = bin addq ~dst ~srcl ~srcr
+
+    let sub ~dst ~srcl ~srcr = bin subq ~dst ~srcl ~srcr
+
+    let mul ~dst ~srcl ~srcr = bin imulq ~dst ~srcl ~srcr
 
     let div ~dst ~srcl ~srcr =
-      failwith "Students! This is your job!"
+      (* Il semblerait qu'écraser %rax et %rdx lors de cette instruction
+         est autorisé *)
+      insns [
+        movq ~src:srcl ~dst:(`Reg RAX); cqto;
+        movq ~src:srcr ~dst:scratch;
+        idivq ~src:scratch; movq ~src:(`Reg RAX) ~dst
+      ]
 
-    let andl ~dst ~srcl ~srcr =
-      failwith "Students! This is your job!"
+    let andl ~dst ~srcl ~srcr = bin andq ~dst ~srcl ~srcr
 
-    let orl ~dst ~srcl ~srcr =
-      failwith "Students! This is your job!"
+    let orl ~dst ~srcl ~srcr = bin orq ~dst ~srcl ~srcr
 
     let conditional_jump ~cc ~srcl ~srcr ~ll ~lr =
-      failwith "Students! This is your job!"
+      insns [
+        movq ~src:srcl ~dst:scratch;
+        cmpq ~src1:srcr ~src2:scratch;
+        jccl ~cc ~tgt:ll; jmpl ~tgt:lr
+      ]
 
     let switch ?default ~discriminant ~cases =
-      failwith "Students! This is your job!"
+      let check_default = match default with
+        | None -> []
+        | Some lab -> [
+          cmpq ~src1:(liti (Array.length cases)) ~src2:scratch;
+          jccl ~cc:AE ~tgt:lab
+        ]
+      in
+      let tbl = fresh_label () in
+      insns (
+        movq ~src:discriminant ~dst:scratch :: check_default @
+        [jmpi ~tgt:(`Addr (addr ~offset:(Lab tbl)
+                                ~idx:scratchr ~scale:`Eight ()))]) @
+      [(* Directive (PadToAlign { pow = 3; fill = 0 }); *)
+       Label tbl;
+       Directive (Quad (List.map (fun lab -> Lab lab) (Array.to_list cases)))]
 
   end
 
@@ -566,37 +581,52 @@ module FrameManager(IS : InstructionSelector) : FrameManager =
       + fd.locals_space
 
     let frame_descriptor ~params ~locals =
-      (* Student! Implement me! *)
+      let map = ref S.IdMap.empty in
+      let at_pos name x =
+        map := S.IdMap.add name (Mint.of_int (Mint.size_in_bytes * x)) !map
+      in
+      List.iteri (fun i name -> at_pos name (i + 2)) params;
+      List.iteri (fun i name -> at_pos name (- 1 - i)) locals;
       {
         param_count = List.length params;
         locals_space = Mint.size_in_bytes * List.length locals;
-        stack_map = S.IdMap.empty;
+        stack_map = !map;
       }
 
-    let location_of fd (S.Id id) =
-      T.addr ~offset:(Lab id) ~base:RIP ()
+    let location_of fd id =
+      match S.IdMap.find id fd.stack_map with
+      | off -> T.addr ~offset:(Lit off) ~base:RBP ()
+      | exception Not_found ->
+        let (Id id) = id in T.addr ~offset:(Lab id) ~base:RIP ()
 
     let function_prologue fd =
-      if is_empty_frame fd then [] else
+      if empty_frame fd then [] else
       T.insns [
-        T.pushq ~src:(`Reg RBP); T.movq ~src:(`Reg RSP) ~dst:(`Reg RBP);
-        T.subq ~dst:(`Reg RSP) ~src:(`Imm (Lit (Mint.of_int fd.locals_space)))
+        T.pushq ~src:rbp; T.movq ~src:rsp ~dst:rbp;
+        T.subq ~dst:rsp ~src:(T.liti fd.locals_space)
       ]
 
     let function_epilogue fd =
-      if is_empty_frame fd then [] else
+      if empty_frame fd then [] else
       T.insns [
-        T.addq ~dst:(`Reg RSP) ~src:(`Imm (Lit (Mint.of_int fd.locals_space)));
-        T.popq ~dst:(`Reg RBP)
+        T.addq ~dst:rsp ~src:(T.liti fd.locals_space);
+        T.popq ~dst:rbp
       ]
 
     let call fd ~kind ~f ~args =
-      (* TODO alignement de la pile *)
       let off = Mint.size_in_bytes * List.length args in
+      let usage = off + stack_usage_after_prologue fd in
+      let noff = off + usage mod 16 in
+      let adjust =
+        if usage mod 16 = 0 then
+          []
+        else
+          [T.subq ~dst:rsp ~src:(T.liti (usage mod 16))]
+      in
       T.insns (
-        List.rev_map (fun src -> T.pushq ~src) args @
-        [T.calldi f; T.addq ~dst:(`Reg RSP) ~src:(`Imm (Lit (Mint.of_int off)))]
-      )
+        adjust @ List.rev_map (fun src -> T.pushq ~src) args @
+        [T.calldi ~tgt:f; T.addq ~dst:rsp ~src:(T.liti noff)]
+      ) @ (if kind = `Tail then T.insns [T.Ret] else [])
 
   end
 

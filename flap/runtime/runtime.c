@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <inttypes.h>
 
 int equal_string(const char* s1, const char* s2) {
   return (strcmp (s1, s2) == 0 ? 1 : 0);
@@ -16,7 +17,7 @@ void print_string(const char* s) {
 }
 
 void print_int(int64_t n) {
-    fprintf(stderr, "Students! This is your job!\n");
+  printf("%" PRId64, n);
 }
 
 void observe_int(int64_t n) {
