@@ -614,20 +614,48 @@ module FrameManager(IS : InstructionSelector) : FrameManager =
       ]
 
     let call fd ~kind ~f ~args =
-      let off = Mint.size_in_bytes * List.length args in
-      let usage = off + stack_usage_after_prologue fd in
-      let noff = off + usage mod 16 in
-      let adjust =
-        if usage mod 16 = 0 then
-          []
-        else
-          [T.subq ~dst:rsp ~src:(T.liti (usage mod 16))]
-      in
-      T.insns (
-        adjust @ List.rev_map (fun src -> T.pushq ~src) args @
-        [T.calldi ~tgt:f; T.addq ~dst:rsp ~src:(T.liti noff)]
-      ) @ (if kind = `Tail then T.insns [T.Ret] else [])
-
+      let sz = Mint.size_in_bytes in
+      let off = sz * List.length args in
+      let usage = stack_usage_after_prologue fd in
+      let offset n = T.Lit (Mint.of_int n) in
+      let addr off base = `Addr (T.addr ~offset:(offset off) ~base ()) in
+      let rec range_down n =
+        if n = 0 then [] else (n - 1) :: range_down (n - 1) in
+      if kind = `Normal then
+        let align = (off + usage) mod 16 in
+        let noff = off + align in
+        let adjust =
+          if align = 0 then
+            []
+          else
+            [T.subq ~dst:rsp ~src:(T.liti align)]
+        in
+        T.insns (
+          adjust @ List.rev_map (fun src -> T.pushq ~src) args @
+          [T.calldi ~tgt:f; T.addq ~dst:rsp ~src:(T.liti noff)]
+        )
+      else
+        (* This is unoptimized but still does a tail call *)
+        T.insns (
+          List.rev_map (fun src -> T.pushq ~src) args @
+          (* Push the return address and restore RBP if applicable *)
+          (if empty_frame fd then
+            (* Empty frame, so no RBP. Only arguments are in the stack. *)
+            [T.pushq ~src:(addr off RSP)]
+          else
+            [T.pushq ~src:(addr sz RBP); T.movq ~src:(addr 0 RBP) ~dst:rbp]
+          ) @
+          (* Move the needed part of the stack *)
+          List.concat (List.map (fun i ->
+            let cur = sz * i in [
+              T.movq ~src:(addr cur RSP) ~dst:scratch;
+              T.movq ~src:scratch ~dst:(addr (cur + usage) RSP)
+          ]) (range_down (List.length args + 1))) @
+          (* Adjust RSP *)
+          [T.addq ~src:(T.liti usage) ~dst:rsp] @
+          (* Jump *)
+          [T.jmpdi ~tgt:f]
+        )
   end
 
 module CG =
